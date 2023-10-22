@@ -7,7 +7,7 @@ import sqlite3
 import ctypes
 from os import path
 
-#test
+#test N
 
 class Inventario:
   def __init__(self, master=None):
