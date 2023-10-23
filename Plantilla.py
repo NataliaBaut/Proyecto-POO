@@ -356,7 +356,7 @@ class Inventario:
     pass
   
 
-if __name__ == "__plantilla__":
+if __name__ == "__main__":
     app = Inventario()
     app.run()
     
