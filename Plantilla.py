@@ -29,7 +29,7 @@ class Inventario:
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("f2.ico")
+    #self.win.iconbitmap("f2.ico")
     self.win.resizable(False, False)
     self.win.title("Manejo de Proveedores") 
 
