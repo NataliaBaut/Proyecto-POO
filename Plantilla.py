@@ -16,7 +16,7 @@ class Inventario:
     # self.path =  r'X:/Users/ferna/Documents/UNal/Alumnos/2023_S2/ProyInventario'
     # self.db_name = self.path + r'\Inventario.db'
     # Para pruebas
-    self.path = path.dirname(__file__)
+    self.path = str(path.dirname(__file__))
     self.db_name = r"" + self.path + r'\Inventario.db'
     user32 = ctypes.windll.user32
     user32.SetProcessDPIAware()
@@ -45,109 +45,109 @@ class Inventario:
 
     #Frame de datos
     self.frm1 = ttk.Frame(self.tabs)
-    self.frm1.configure(height=200, width=200)
+    self.frm1.configure(height=self.cambiar_alto(200), width=200)
 
     #Etiqueta IdNit del Proveedor
     self.lblIdNit = ttk.Label(self.frm1)
     self.lblIdNit.configure(text='Id/Nit', width=6)
-    self.lblIdNit.place(anchor="nw", x=10, y=40)
+    self.lblIdNit.place(anchor="nw", x=10, y=self.cambiar_alto(40))
 
     #Captura IdNit del Proveedor
     self.idNit = ttk.Entry(self.frm1)
     self.idNit.configure(takefocus=True)
-    self.idNit.place(anchor="nw", x=50, y=40)
+    self.idNit.place(anchor="nw", x=50, y=self.cambiar_alto(40))
     self.idNit.bind("<Key>", self.validaIdNit)
     self.idNit.bind("<BackSpace>", lambda _:self.idNit.delete(len(self.idNit.get())),'end')
 
     #Etiqueta razón social del Proveedor
     self.lblRazonSocial = ttk.Label(self.frm1)
     self.lblRazonSocial.configure(text='Razon social', width=12)
-    self.lblRazonSocial.place(anchor="nw", x=210, y=40)
+    self.lblRazonSocial.place(anchor="nw", x=210, y=self.cambiar_alto(40))
 
     #Captura razón social del Proveedor
     self.razonSocial = ttk.Entry(self.frm1)
     self.razonSocial.configure(width=36)
-    self.razonSocial.place(anchor="nw", x=290, y=40)
+    self.razonSocial.place(anchor="nw", x=290, y=self.cambiar_alto(40))
 
     #Etiqueta ciudad del Proveedor
     self.lblCiudad = ttk.Label(self.frm1)
     self.lblCiudad.configure(text='Ciudad', width=7)
-    self.lblCiudad.place(anchor="nw", x=540, y=40)
+    self.lblCiudad.place(anchor="nw", x=540, y=self.cambiar_alto(40))
 
     #Captura ciudad del Proveedor
     self.ciudad = ttk.Entry(self.frm1)
     self.ciudad.configure(width=30)
-    self.ciudad.place(anchor="nw", x=590, y=40)
+    self.ciudad.place(anchor="nw", x=590, y=self.cambiar_alto(40))
 
     #Separador
     self.separador1 = ttk.Separator(self.frm1)
     self.separador1.configure(orient="horizontal")
-    self.separador1.place(anchor="nw", width=800, x=0, y=79)
+    self.separador1.place(anchor="nw", width=800, x=0, y=self.cambiar_alto(79))
 
     #Etiqueta Código del Producto
     self.lblCodigo = ttk.Label(self.frm1)
     self.lblCodigo.configure(text='Código', width=7)
-    self.lblCodigo.place(anchor="nw", x=10, y=120)
+    self.lblCodigo.place(anchor="nw", x=10, y=self.cambiar_alto(120))
 
     #Captura el código del Producto
     self.codigo = ttk.Entry(self.frm1)
     self.codigo.configure(width=13)
-    self.codigo.place(anchor="nw", x=60, y=120)
+    self.codigo.place(anchor="nw", x=60, y=self.cambiar_alto(120))
 
     #Etiqueta descripción del Producto
     self.lblDescripcion = ttk.Label(self.frm1)
     self.lblDescripcion.configure(text='Descripción', width=11)
-    self.lblDescripcion.place(anchor="nw", x=220, y=120)
+    self.lblDescripcion.place(anchor="nw", x=220, y=self.cambiar_alto(120))
 
     #Captura la descripción del Producto
     self.descripcion = ttk.Entry(self.frm1)
     self.descripcion.configure(width=36)
-    self.descripcion.place(anchor="nw", x=290, y=120)
+    self.descripcion.place(anchor="nw", x=290, y=self.cambiar_alto(120))
 
     #Etiqueta unidad o medida del Producto
     self.lblUnd = ttk.Label(self.frm1)
     self.lblUnd.configure(text='Unidad', width=7)
-    self.lblUnd.place(anchor="nw", x=540, y=120)
+    self.lblUnd.place(anchor="nw", x=540, y=self.cambiar_alto(120))
 
     #Captura la unidad o medida del Producto
     self.unidad = ttk.Entry(self.frm1)
     self.unidad.configure(width=10)
-    self.unidad.place(anchor="nw", x=590, y=120)
+    self.unidad.place(anchor="nw", x=590, y=self.cambiar_alto(120))
 
     #Etiqueta cantidad del Producto
     self.lblCantidad = ttk.Label(self.frm1)
     self.lblCantidad.configure(text='Cantidad', width=8)
-    self.lblCantidad.place(anchor="nw", x=10, y=170)
+    self.lblCantidad.place(anchor="nw", x=10, y=self.cambiar_alto(170))
 
     #Captura la cantidad del Producto
     self.cantidad = ttk.Entry(self.frm1)
     self.cantidad.configure(width=12)
-    self.cantidad.place(anchor="nw", x=70, y=170)
+    self.cantidad.place(anchor="nw", x=70, y=self.cambiar_alto(170))
 
     #Etiqueta precio del Producto
     self.lblPrecio = ttk.Label(self.frm1)
     self.lblPrecio.configure(text='Precio $', width=8)
-    self.lblPrecio.place(anchor="nw", x=170, y=170)
+    self.lblPrecio.place(anchor="nw", x=170, y=self.cambiar_alto(170))
 
     #Captura el precio del Producto
     self.precio = ttk.Entry(self.frm1)
     self.precio.configure(width=15)
-    self.precio.place(anchor="nw", x=220, y=170)
+    self.precio.place(anchor="nw", x=220, y=self.cambiar_alto(170))
 
     #Etiqueta fecha de compra del Producto
     self.lblFecha = ttk.Label(self.frm1)
     self.lblFecha.configure(text='Fecha', width=6)
-    self.lblFecha.place(anchor="nw", x=350, y=170)
+    self.lblFecha.place(anchor="nw", x=350, y=self.cambiar_alto(170))
 
     #Captura la fecha de compra del Producto
     self.fecha = ttk.Entry(self.frm1)
     self.fecha.configure(width=10)
-    self.fecha.place(anchor="nw", x=390, y=170)
+    self.fecha.place(anchor="nw", x=390, y=self.cambiar_alto(170))
 
     #Separador
     self.separador2 = ttk.Separator(self.frm1)
     self.separador2.configure(orient="horizontal")
-    self.separador2.place(anchor="nw", width=800, x=0, y=220)
+    self.separador2.place(anchor="nw", width=800, x=0, y=self.cambiar_alto(220))
 
 
     #tablaTreeView
@@ -183,12 +183,12 @@ class Inventario:
 
     #Carga los datos en treeProductos
     #self.lee_treeProductos() 
-    self.treeProductos.place(anchor="nw", height=560, width=790, x=2, y=230)
+    self.treeProductos.place(anchor="nw", height=self.cambiar_alto(560), width=790, x=2, y=self.cambiar_alto(230))
 
     #Scrollbar en el eje Y de treeProductos
     self.scrollbary=ttk.Scrollbar(self.treeProductos, orient='vertical', command=self.treeProductos.yview)
     self.treeProductos.configure(yscroll=self.scrollbary.set)
-    self.scrollbary.place(x=778, y=25, height=478)
+    self.scrollbary.place(x=778, y=self.cambiar_alto(25), height=self.cambiar_alto(478))
 
     # Título de la pestaña Ingreso de Datos
     self.frm1.pack(side="top")
@@ -197,35 +197,35 @@ class Inventario:
 
     #Frame 2 para contener los botones
     self.frm2 = ttk.Frame(self.win)
-    self.frm2.configure(height=100, width=800)
+    self.frm2.configure(height=self.cambiar_alto(100), width=800)
 
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
     self.btnBuscar.configure(text='Buscar')
-    self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
+    self.btnBuscar.place(anchor="nw", width=self.cambiar_alto(70), x=200, y=10)
 
     #Botón para Guardar los datos
     self.btnGrabar = ttk.Button(self.frm2)
     self.btnGrabar.configure(text='Grabar')
-    self.btnGrabar.place(anchor="nw", width=70, x=275, y=10)
+    self.btnGrabar.place(anchor="nw", width=self.cambiar_alto(70), x=275, y=10)
 
     #Botón para Editar los datos
     self.btnEditar = ttk.Button(self.frm2)
     self.btnEditar.configure(text='Editar')
-    self.btnEditar.place(anchor="nw", width=70, x=350, y=10)
+    self.btnEditar.place(anchor="nw", width=self.cambiar_alto(70), x=350, y=10)
 
     #Botón para Elimnar datos
     self.btnEliminar = ttk.Button(self.frm2)
     self.btnEliminar.configure(text='Eliminar')
-    self.btnEliminar.place(anchor="nw", width=70, x=425, y=10)
+    self.btnEliminar.place(anchor="nw", width=self.cambiar_alto(70), x=425, y=10)
 
     #Botón para cancelar una operación
     self.btnCancelar = ttk.Button(self.frm2)
     self.btnCancelar.configure(text='Cancelar', width=80,command = self.limpiaCampos)
-    self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
+    self.btnCancelar.place(anchor="nw", width=self.cambiar_alto(70), x=500, y=10)
 
     #Ubicación del Frame 2
-    self.frm2.place(anchor="nw", height=60, relwidth=1, y=755)
+    self.frm2.place(anchor="nw", height=60, relwidth=1, y=self.cambiar_alto(755))
     self.win.pack(anchor="center", side="top")
 
     # widget Principal del sistema
@@ -271,7 +271,7 @@ class Inventario:
   def centra(self,win,ancho,alto): 
       """ centra las ventanas en la pantalla """ 
       x = win.winfo_screenwidth() // 2 - ancho // 2 
-      y = win.winfo_screenheight() // 2 - alto // 2 
+      y = win.winfo_screenheight() // 3 - alto // 3 
       win.geometry(f'{ancho}x{alto}+{x}+{y}') 
       win.deiconify() # Se usa para restaurar la ventana
 
@@ -359,4 +359,3 @@ class Inventario:
 if __name__ == "__main__":
     app = Inventario()
     app.run()
-    
