@@ -141,8 +141,11 @@ class Inventario:
 
     #Captura la fecha de compra del Producto
     self.fecha = ttk.Entry(self.frm1)
-    self.fecha.configure(width=10)
+    self.fecha.configure(width=14,foreground='grey')
     self.fecha.place(anchor="nw", x=390, y=self.cambiar_alto(170))
+    self.fecha.insert(0, 'DD/MM/AAAA')
+    self.fecha.bind("<FocusIn>", self.formato)
+    self.fecha.bind("<FocusOut>", self.formato)
 
     #Separador
     self.separador2 = ttk.Separator(self.frm1)
@@ -202,27 +205,90 @@ class Inventario:
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
     self.btnBuscar.configure(text='Buscar')
-    self.btnBuscar.place(anchor="nw", width=self.cambiar_alto(70), x=200, y=10)
+    self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
+    def valida_Fecha ():
+      try:
+        nDia, nMes, nAño = (int (i) for i in str(self.fecha.get()).split('/'))
+        if (nDia in range(1, 32) and nMes in range (1,13) and nAño >= 1582): #revisa que el mes los dias y los años existan
+          if nAño % 4 !=0 or nAño % 400 !=0 and nAño % 100 == 0:
+              #Bisiesto = False
+              if ( nDia >= 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
+                mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
+                return False
+              else:
+                if nDia< 10 or nMes <10:
+                    return True,(f"0{nDia}/0{nMes}/{nAño}")
+                else:
+                    return True,(f"{nDia}/{nMes}/{nAño}")
+          else:
+              #Bisiesto = True
+              if (nDia > 29 and nMes == 2):
+                mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
+                return False
+              else:
+                if nDia < 10 or nMes < 10:
+                    return True,(f"0{nDia}/0{nMes}/{nAño}")
+                else:
+                   return True,(f"{nDia}/{nMes}/{nAño}")
+        else:
+          mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')  
+          return False
+      except ValueError:
+         mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
+    def adiciona_Registro():
+      '''Adiciona un producto a la BD si la validación es True'''
+      if self.idNit.get()== '':
+         mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
+      else:
+        try:
+            self.agregaProveedor()
+            mssg.showinfo('','Proveedor creado excitosamente')
+            if self.codigo.get() != '':
+               if valida_Fecha():
+                try:
+                    self.agregaProducto(valida_Fecha()[1])
+                    mssg.showinfo('','Producto creado excitosamente')
+                    self.limpiaCampos()
+                except sqlite3.IntegrityError:
+                   mssg.showerror('Atención!!','Código de producto ya existente')
+               else:
+                mssg.showinfo('','No se creo el producto')
+        except sqlite3.IntegrityError:
+            if self.codigo.get() != '':
+               if valida_Fecha():
+                try:
+                    self.agregaProducto(valida_Fecha()[1])
+                    mssg.showinfo('','Producto creado excitosamente')
+                    self.limpiaCampos()
+                except sqlite3.IntegrityError:
+                   mssg.showerror('Atención!!','Código de producto ya existente')
+               else:
+                mssg.showinfo('','No se creo el producto')
+            else:
+               if (self.descripcion.get() or self.unidad.get() or self.cantidad.get() or self.fecha.get() or self.precio.get()) != '':
+                mssg.showerror('Atención!!','No ingresó código de producto')
+               else:
+                mssg.showerror('Atención!!','Proveedor ya existente')
 
     #Botón para Guardar los datos
     self.btnGrabar = ttk.Button(self.frm2)
-    self.btnGrabar.configure(text='Grabar')
-    self.btnGrabar.place(anchor="nw", width=self.cambiar_alto(70), x=275, y=10)
+    self.btnGrabar.configure(text='Grabar',command=adiciona_Registro)
+    self.btnGrabar.place(anchor="nw", width=70, x=275, y=10)
 
     #Botón para Editar los datos
     self.btnEditar = ttk.Button(self.frm2)
     self.btnEditar.configure(text='Editar')
-    self.btnEditar.place(anchor="nw", width=self.cambiar_alto(70), x=350, y=10)
+    self.btnEditar.place(anchor="nw", width=70, x=350, y=10)
 
     #Botón para Elimnar datos
     self.btnEliminar = ttk.Button(self.frm2)
     self.btnEliminar.configure(text='Eliminar')
-    self.btnEliminar.place(anchor="nw", width=self.cambiar_alto(70), x=425, y=10)
+    self.btnEliminar.place(anchor="nw", width=70, x=425, y=10)
 
     #Botón para cancelar una operación
     self.btnCancelar = ttk.Button(self.frm2)
     self.btnCancelar.configure(text='Cancelar', width=80,command = self.limpiaCampos)
-    self.btnCancelar.place(anchor="nw", width=self.cambiar_alto(70), x=500, y=10)
+    self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
 
     #Ubicación del Frame 2
     self.frm2.place(anchor="nw", height=60, relwidth=1, y=self.cambiar_alto(755))
@@ -299,6 +365,8 @@ class Inventario:
       self.cantidad.delete(0,'end')
       self.precio.delete(0,'end')
       self.fecha.delete(0,'end')
+      self.fecha.insert(0,'DD/MM/AAAA')
+      self.fecha.config(foreground='grey')
  
   #Rutina para cargar los datos en el árbol  
   def carga_Datos(self):
@@ -315,6 +383,12 @@ class Inventario:
         result = cursor.execute(query, parametros)
         conn.commit()
     return result
+  def run_Query_M(self, query, param):
+     with sqlite3.connect(self.db_name) as conn:
+        cursor = conn.cursor()
+        result = cursor.executemany(query, param)
+        conn.commit()
+     return result
 
   def lee_treeProductos(self):
     ''' Carga los datos y Limpia la Tabla tablaTreeView '''
@@ -327,21 +401,24 @@ class Inventario:
     db_rows = self.run_Query(query) # db_rows contine la vista del query
       
     # Insertando los datos de la BD en treeProductos de la pantalla
+    row=[]
     for row in db_rows:
       self.treeProductos.insert('',0, text = row[0], values = [row[4],row[5],row[6],row[7],row[8],row[9]])
 
     ''' Al final del for row queda con la última tupla
         y se usan para cargar las variables de captura
     '''
-    self.idNit.insert(0,row[0])
-    self.razonSocial.insert(0,row[1])
-    self.ciudad.insert(0,row[2])
-    self.codigo.insert(0,row[4])
-    self.descripcion.insert(0,row[5])
-    self.unidad.insert(0,row[6])
-    self.cantidad.insert(0,row[7])
-    self.precio.insert(0,row[8])
-    self.fecha.insert(0,row[9])  
+    if row:
+      self.idNit.insert(0,row[0])
+      self.razonSocial.insert(0,row[1])
+      self.ciudad.insert(0,row[2])
+      self.codigo.insert(0,row[4])
+      self.descripcion.insert(0,row[5])
+      self.unidad.insert(0,row[6])
+      self.cantidad.insert(0,row[7])
+      self.precio.insert(0,row[8])
+      self.fecha.insert(0,row[9])  
+    self.limpiaCampos()
           
   def adiciona_Registro(self, event=None):
     '''Adiciona un producto a la BD si la validación es True'''
@@ -354,6 +431,23 @@ class Inventario:
   def eliminaRegistro(self, event=None):
     '''Elimina un Registro en la BD'''
     pass
+
+  def agregaProveedor(self):
+   Registro_Prov=[(self.idNit.get(),self.razonSocial.get(),self.ciudad.get())]
+   query="INSERT INTO Proveedores VALUES (?,?,?)"
+   self.run_Query_M(query,Registro_Prov)
+  def agregaProducto(self,fecha):
+    Registro_Prod=[(self.idNit.get(),self.codigo.get(),self.descripcion.get(),self.unidad.get(),self.cantidad.get(),self.precio.get(),fecha)]
+    query="INSERT INTO Productos VALUES (?,?,?,?,?,?,?)"
+    self.run_Query_M(query,Registro_Prod)
+  def formato(self,event):
+    textoActual = self.fecha.get()
+    if textoActual == "DD/MM/AAAA":
+        self.fecha.delete(0, tk.END)
+        self.fecha.config(foreground= 'black')
+    elif textoActual == "":
+        self.fecha.insert(0,"DD/MM/AAAA")
+        self.fecha.config(foreground = 'grey')
   
 
 if __name__ == "__main__":
