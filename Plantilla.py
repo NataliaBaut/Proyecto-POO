@@ -222,7 +222,7 @@ class Inventario:
                     return True,(f"{nDia}/{nMes}/{nAño}")
           else:
               #Bisiesto = True
-              if (nDia > 29 and nMes == 2):
+              if (nDia > 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
                 mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
                 return False
               else:
