@@ -202,27 +202,27 @@ class Inventario:
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
     self.btnBuscar.configure(text='Buscar')
-    self.btnBuscar.place(anchor="nw", width=self.cambiar_alto(70), x=200, y=10)
+    self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
 
     #Botón para Guardar los datos
     self.btnGrabar = ttk.Button(self.frm2)
     self.btnGrabar.configure(text='Grabar')
-    self.btnGrabar.place(anchor="nw", width=self.cambiar_alto(70), x=275, y=10)
+    self.btnGrabar.place(anchor="nw", width=70, x=275, y=10)
 
     #Botón para Editar los datos
     self.btnEditar = ttk.Button(self.frm2)
     self.btnEditar.configure(text='Editar')
-    self.btnEditar.place(anchor="nw", width=self.cambiar_alto(70), x=350, y=10)
+    self.btnEditar.place(anchor="nw", width=70, x=350, y=10)
 
     #Botón para Elimnar datos
     self.btnEliminar = ttk.Button(self.frm2)
     self.btnEliminar.configure(text='Eliminar')
-    self.btnEliminar.place(anchor="nw", width=self.cambiar_alto(70), x=425, y=10)
+    self.btnEliminar.place(anchor="nw", width=70, x=425, y=10)
 
     #Botón para cancelar una operación
     self.btnCancelar = ttk.Button(self.frm2)
     self.btnCancelar.configure(text='Cancelar', width=80,command = self.limpiaCampos)
-    self.btnCancelar.place(anchor="nw", width=self.cambiar_alto(70), x=500, y=10)
+    self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
 
     #Ubicación del Frame 2
     self.frm2.place(anchor="nw", height=60, relwidth=1, y=self.cambiar_alto(755))
