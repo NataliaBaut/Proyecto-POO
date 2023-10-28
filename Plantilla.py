@@ -11,7 +11,7 @@ from os import path
 
 class Inventario:
   def __init__(self, master=None):
-
+    crear_base_datos()
     # Para entrega
     # self.path =  r'X:/Users/ferna/Documents/UNal/Alumnos/2023_S2/ProyInventario'
     # self.db_name = self.path + r'\Inventario.db'
@@ -202,10 +202,32 @@ class Inventario:
     self.frm2 = ttk.Frame(self.win)
     self.frm2.configure(height=self.cambiar_alto(100), width=800)
 
+    def buscar_prov():
+      ''' Carga los datos'''
+      tabla_TreeView = self.treeProductos.get_children()
+      for linea in tabla_TreeView:
+        self.treeProductos.delete(linea) # Límpia la filas del TreeView
+      # if self.codigo.get() != "":
+      query=('SELECT * FROM Proveedores WHERE IdNitProv LIKE ?')
+      parametros=(self.idNit.get()+"%")
+      db_rows = self.run_Query(query,(parametros,))
+      row=[]
+      for row in db_rows:
+        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2]])
+      if row:
+        self.idNit.insert(0,row[0])
+        self.razonSocial.insert(0,row[1])
+        self.ciudad.insert(0,row[2])
+      self.limpiaCampos()
+
+      if (list(self.treeProductos.get_children())==[]):
+        mssg.showerror('Atención!!','.. ¡Proveedor no encontrado! ..')
+
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
-    self.btnBuscar.configure(text='Buscar')
+    self.btnBuscar.configure(text='Buscar', command=buscar_prov)
     self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
+
     def valida_Fecha ():
       try:
         nDia, nMes, nAño = (int (i) for i in str(self.fecha.get()).split('/'))
@@ -235,6 +257,7 @@ class Inventario:
           return False
       except ValueError:
          mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
+
     def adiciona_Registro():
       '''Adiciona un producto a la BD si la validación es True'''
       if self.idNit.get()== '':
@@ -296,33 +319,6 @@ class Inventario:
 
     # widget Principal del sistema
     self.mainwindow = self.win
-    
-  # Crea la base de datos
-
-  def crear_base_datos():
-    conn = sqlite3.connect('Inventario.db')
-    c=conn.cursor()
-    c.execute(""" CREATE TABLE IF NOT EXISTS Proveedores (
-      IdNitProv VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
-      Razon_Social VARCHAR(300),
-      Ciudad VARCHAR(20)
-    ); """)
-
-    c.execute(""" CREATE TABLE IF NOT EXISTS Productos(
-        IdNit VARCHAR(15) ,
-        Codigo VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
-        Descripcion VARCHAR(300),
-        Unidad VARCHAR(10),
-        Cantidad DOUBLE,
-        Precio DOUBLE,
-        Fecha DATE,
-        FOREIGN KEY (IdNit) REFERENCES Proveedores(IdNitProv)
-    ); """)
-
-      # c.execute("INSERT INTO Proveedores ")
-
-    conn.close()
-  # crear_base_datos()
 
   def cambiar_alto(self, altura):
      nuevo_alto = int((altura / 1080) * self.alto_p)
@@ -448,7 +444,29 @@ class Inventario:
     elif textoActual == "":
         self.fecha.insert(0,"DD/MM/AAAA")
         self.fecha.config(foreground = 'grey')
-  
+
+# Crea la base de datos
+def crear_base_datos():
+  conn = sqlite3.connect('Inventario.db')
+  c=conn.cursor()
+  c.execute(""" CREATE TABLE IF NOT EXISTS Proveedores (
+      IdNitProv VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
+      Razon_Social VARCHAR(200),
+      Ciudad VARCHAR(20)
+  ); """)
+
+  c.execute(""" CREATE TABLE IF NOT EXISTS Productos(
+      IdNit VARCHAR(15) ,
+      Codigo VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
+      Descripcion VARCHAR(300),
+      Unidad VARCHAR(10),
+      Cantidad DOUBLE,
+      Precio DOUBLE,
+      Fecha DATE,
+      FOREIGN KEY (IdNit) REFERENCES Proveedores(IdNitProv)
+  ) """)
+  # c.execute("INSERT INTO Proveedores ")
+  conn.close()
 
 if __name__ == "__main__":
     app = Inventario()
