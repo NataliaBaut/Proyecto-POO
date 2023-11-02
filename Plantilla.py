@@ -18,12 +18,12 @@ class Inventario:
     # Para pruebas
     self.path = str(path.dirname(__file__))
     self.db_name = r"" + self.path + r'\Inventario.db'
+    # Dimensione de la pantalla
     user32 = ctypes.windll.user32
     user32.SetProcessDPIAware()
     self.alto_p = user32.GetSystemMetrics(1)
     ancho = 830 
     alto = self.cambiar_alto(840)
-    # Dimensione de la pantalla
     actualiza = None
   
     # Crea ventana principal
@@ -69,6 +69,7 @@ class Inventario:
     self.razonSocial.configure(width=36)
     self.razonSocial.place(anchor="nw", x=290, y=self.cambiar_alto(40))
     self.razonSocial.bind("<FocusOut>", self.validaRazon)
+
     #Etiqueta ciudad del Proveedor
     self.lblCiudad = ttk.Label(self.frm1)
     self.lblCiudad.configure(text='Ciudad', width=7)
@@ -79,6 +80,7 @@ class Inventario:
     self.ciudad.configure(width=30)
     self.ciudad.place(anchor="nw", x=590, y=self.cambiar_alto(40))
     self.ciudad.bind("<FocusOut>", self.validaCiudad)
+
     #Separador
     self.separador1 = ttk.Separator(self.frm1)
     self.separador1.configure(orient="horizontal")
@@ -94,6 +96,7 @@ class Inventario:
     self.codigo.configure(width=15)
     self.codigo.place(anchor="nw", x=60, y=self.cambiar_alto(120))
     self.codigo.bind("<FocusOut>", self.validaCodigo)
+
     #Etiqueta descripción del Producto
     self.lblDescripcion = ttk.Label(self.frm1)
     self.lblDescripcion.configure(text='Descripción', width=11)
@@ -104,6 +107,7 @@ class Inventario:
     self.descripcion.configure(width=36)
     self.descripcion.place(anchor="nw", x=290, y=self.cambiar_alto(120))
     self.descripcion.bind("<FocusOut>", self.validaDescrip)
+
     #Etiqueta unidad o medida del Producto
     self.lblUnd = ttk.Label(self.frm1)
     self.lblUnd.configure(text='Unidad', width=7)
@@ -114,6 +118,7 @@ class Inventario:
     self.unidad.configure(width=10)
     self.unidad.place(anchor="nw", x=590, y=self.cambiar_alto(120))
     self.unidad.bind("<FocusOut>", self.validaUnidad)
+
     #Etiqueta cantidad del Producto
     self.lblCantidad = ttk.Label(self.frm1)
     self.lblCantidad.configure(text='Cantidad', width=8)
@@ -124,6 +129,7 @@ class Inventario:
     self.cantidad.configure(width=12)
     self.cantidad.place(anchor="nw", x=70, y=self.cambiar_alto(170))
     self.cantidad.bind("<FocusOut>", self.validaCtdad)
+
     #Etiqueta precio del Producto
     self.lblPrecio = ttk.Label(self.frm1)
     self.lblPrecio.configure(text='Precio $', width=8)
@@ -134,6 +140,7 @@ class Inventario:
     self.precio.configure(width=15)
     self.precio.place(anchor="nw", x=220, y=self.cambiar_alto(170))
     self.precio.bind("<FocusOut>", self.validaPrecio)
+
     #Etiqueta fecha de compra del Producto
     self.lblFecha = ttk.Label(self.frm1)
     self.lblFecha.configure(text='Fecha', width=6)
@@ -203,29 +210,79 @@ class Inventario:
     self.frm2.configure(height=self.cambiar_alto(100), width=800)
 
     def buscar_prov():
-      ''' Carga los datos'''
-      tabla_TreeView = self.treeProductos.get_children()
-      for linea in tabla_TreeView:
-        self.treeProductos.delete(linea) # Límpia la filas del TreeView
-      # if self.codigo.get() != "":
-      query=('SELECT * FROM Proveedores WHERE IdNitProv LIKE ?')
+      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+      parametros=(self.idNit.get()+"%")
+      db_rows = self.run_Query(query,(parametros,))
+      cant = 0
+      row=[]
+      for row in db_rows:
+        cant += 1
+        self.razonSocial.delete(0,'end')
+        self.razonSocial.insert(0, row[1])
+        self.ciudad.delete(0,'end')
+        self.ciudad.insert(0, row[2])
+      query=('SELECT * FROM Productos WHERE IdNit LIKE ?')
       parametros=(self.idNit.get()+"%")
       db_rows = self.run_Query(query,(parametros,))
       row=[]
       for row in db_rows:
-        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2]])
-      if row:
-        self.idNit.insert(0,row[0])
-        self.razonSocial.insert(0,row[1])
-        self.ciudad.insert(0,row[2])
-      self.limpiaCampos()
-
+        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+      if cant > 1:
+        self.limpiaCampos()
+        self.idNit.insert(0, parametros[:-1])
       if (list(self.treeProductos.get_children())==[]):
         mssg.showerror('Atención!!','.. ¡Proveedor no encontrado! ..')
 
+    def buscar_prod():
+      query=('SELECT * FROM Productos WHERE codigo LIKE ?')
+      parametros=(self.codigo.get()+"%")
+      db_rows = self.run_Query(query,(parametros,))
+      self.limpiaCampos()
+      row=[]
+      for row in db_rows:
+        self.codigo.delete(0,'end')
+        self.codigo.insert(0, row[1])
+        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+      if (list(self.treeProductos.get_children())==[]):
+        mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
+
+    def buscar_prod_prov():
+      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+      parametros=(self.idNit.get()+"%")
+      db_rows = self.run_Query(query,(parametros,))
+      row=[]
+      for row in db_rows:
+        self.razonSocial.delete(0,'end')
+        self.razonSocial.insert(0, row[1])
+        self.ciudad.delete(0,'end')
+        self.ciudad.insert(0, row[2])
+      query=('SELECT * FROM Productos WHERE IdNit LIKE ? AND codigo LIKE ?')
+      parametro1=(self.idNit.get()+"%")
+      parametro2=(self.codigo.get()+"%")
+      db_rows = self.run_Query(query,(parametro1,parametro2))
+      for row in db_rows:
+        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+      if (list(self.treeProductos.get_children())==[]):
+        mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
+
+    def buscar():
+        self.limpia_treeView()
+        if self.idNit.get() == "" and self.codigo.get() == "":
+          mssg.showerror('Atención!!','.. ¡No busco nada! ..')
+        elif self.idNit.get() != "" and self.codigo.get() == "":
+          # Busca proveedor
+          buscar_prov()
+        elif self.idNit.get() == "" and self.codigo.get != "":
+          # Busca producto
+          buscar_prod()
+        elif self.idNit.get() != "" and self.codigo.get != "":
+          # Busca producto de un proveedor
+          buscar_prod_prov()
+
+
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
-    self.btnBuscar.configure(text='Buscar', command=buscar_prov)
+    self.btnBuscar.configure(text='Buscar', command=buscar)
     self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
 
     def valida_Fecha ():
@@ -348,8 +405,8 @@ class Inventario:
  # Validaciones del sistema
   def validaIdNit(self, event):
     ''' Valida que la longitud no sea mayor a 15 caracteres'''
-    if event :
-      if len(self.idNit.get()) > 15 :
+    if event:
+      if len(self.idNit.get()) > 15:
          mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
          self.idNit.delete(15,'end')
       num=0
@@ -414,6 +471,7 @@ class Inventario:
            if self.precio.get() != '':
             mssg.showerror('Atención!!','.. ¡Solo caracteres numericos! ..')
             self.precio.delete(0,'end')  #Rutina de limpieza de datos
+
   def limpiaCampos(self):
       ''' Limpia todos los campos de captura'''
       Inventario.actualiza = None
@@ -452,12 +510,15 @@ class Inventario:
         result = cursor.executemany(query, param)
         conn.commit()
      return result
-
-  def lee_treeProductos(self):
+  
+  def limpia_treeView(self):
     ''' Carga los datos y Limpia la Tabla tablaTreeView '''
     tabla_TreeView = self.treeProductos.get_children()
     for linea in tabla_TreeView:
         self.treeProductos.delete(linea) # Límpia la filas del TreeView
+
+  def lee_treeProductos(self):
+    self.limpia_treeView
     
     # Seleccionando los datos de la BD
     query = '''SELECT * from Proveedores INNER JOIN Productos WHERE idNitProv = idNit ORDER BY idNitProv'''
@@ -557,20 +618,21 @@ def crear_base_datos():
   conn = sqlite3.connect('Inventario.db')
   c=conn.cursor()
   c.execute(""" CREATE TABLE IF NOT EXISTS Proveedores (
-      IdNitProv VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
+      idNitProv VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
       Razon_Social VARCHAR(200),
       Ciudad VARCHAR(20)
   ); """)
 
   c.execute(""" CREATE TABLE IF NOT EXISTS Productos(
       IdNit VARCHAR(15) ,
-      Codigo VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
+      Codigo VARCHAR(15) NOT NULL,
       Descripcion VARCHAR(300),
-      Unidad VARCHAR(10),
+      Und VARCHAR(10),
       Cantidad DOUBLE,
       Precio DOUBLE,
       Fecha DATE,
-      FOREIGN KEY (IdNit) REFERENCES Proveedores(IdNitProv)
+      FOREIGN KEY (IdNit) REFERENCES Proveedores(idNitProv)
+      PRIMARY KEY (IdNit, codigo)
   ) """)
   # c.execute("INSERT INTO Proveedores ")
   conn.close()
