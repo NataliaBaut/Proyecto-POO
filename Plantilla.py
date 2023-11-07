@@ -169,7 +169,7 @@ class Inventario:
     self.treeProductos = ttk.Treeview(self.frm1, style="estilo.Treeview")
     
     self.treeProductos.configure(selectmode="extended")
-
+    self.treeProductos.bind("<<TreeviewSelect>>", self.click) #Une el evento de click a el tree
     # Etiquetas de las columnas para el TreeView
     self.treeProductos["columns"]=("Codigo","Descripcion","Und","Cantidad","Precio","Fecha")
     # Características de las columnas del árbol
@@ -329,82 +329,10 @@ class Inventario:
     self.btnBuscar.configure(text='Buscar', command=buscar)
     self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
 
-    def valida_Fecha ():
-      try:
-        nDia, nMes, nAño = (int (i) for i in str(self.fecha.get()).split('/'))
-        if (nDia in range(1, 32) and nMes in range (1,13) and nAño >= 1582): #revisa que el mes los dias y los años existan
-          if nAño % 4 !=0 or nAño % 400 !=0 and nAño % 100 == 0:
-              #Bisiesto = False
-              if ( nDia >= 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
-                mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
-                return False
-              else:
-                if nDia < 10 and nMes < 10:
-                    return True,(f"0{nDia}/0{nMes}/{nAño}")
-                elif nDia < 10 and nMes >=10:
-                   return True,(f"0{nDia}/{nMes}/{nAño}")
-                elif nDia >= 10 and nMes <10: 
-                   return True,(f"{nDia}/0{nMes}/{nAño}")
-                else:
-                   return True,(f"{nDia}/{nMes}/{nAño}")
-          else:
-              #Bisiesto = True
-              if (nDia > 29 and nMes == 2):
-                mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
-                return False
-              else:
-                if nDia < 10 and nMes < 10:
-                    return True,(f"0{nDia}/0{nMes}/{nAño}")
-                elif nDia < 10 and nMes >=10:
-                   return True,(f"0{nDia}/{nMes}/{nAño}")
-                elif nDia >= 10 and nMes <10: 
-                   return True,(f"{nDia}/0{nMes}/{nAño}")
-                else:
-                   return True,(f"{nDia}/{nMes}/{nAño}")
-        else:
-          mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')  
-          return False
-      except ValueError:
-         mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
-
-    def adiciona_Registro():
-      '''Adiciona un producto a la BD si la validación es True'''
-      if self.idNit.get()== '':
-         mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
-      else:
-        try:
-            self.agregaProveedor()
-            mssg.showinfo('','Proveedor creado exitosamente')
-            if self.codigo.get() != '':
-               if valida_Fecha():
-                try:
-                    self.agregaProducto(valida_Fecha()[1])
-                    mssg.showinfo('','Producto creado exitosamente')
-                    self.limpiaCampos()
-                except sqlite3.IntegrityError:
-                   mssg.showerror('Atención!!','Código de producto ya existente')
-               else:
-                mssg.showinfo('','No se creo el producto')
-        except sqlite3.IntegrityError:
-            if self.codigo.get() != '':
-               if valida_Fecha():
-                try:
-                    self.agregaProducto(valida_Fecha()[1])
-                    mssg.showinfo('','Producto creado exitosamente')
-                    self.limpiaCampos()
-                except sqlite3.IntegrityError:
-                   mssg.showerror('Atención!!','Código de producto ya existente')
-               else:
-                mssg.showinfo('','No se creo el producto')
-            else:
-               if (self.descripcion.get() or self.unidad.get() or self.cantidad.get() or self.fecha.get() or self.precio.get()) != '':
-                mssg.showerror('Atención!!','No ingresó código de producto')
-               else:
-                mssg.showerror('Atención!!','Proveedor ya existente')
 
     #Botón para Guardar los datos
     self.btnGrabar = ttk.Button(self.frm2)
-    self.btnGrabar.configure(text='Grabar',command=adiciona_Registro)
+    self.btnGrabar.configure(text='Grabar',command=self.adiciona_Registro)
     self.btnGrabar.place(anchor="nw", width=70, x=275, y=10)
 
     #Botón para Editar los datos
@@ -480,20 +408,20 @@ class Inventario:
             self.codigo.delete(num-ind)
   def validaRazon (self,event):
      if event:
-        if len(self.razonSocial.get()) > 100:
-            mssg.showerror('Atención!!','.. ¡Máximo 100 caracteres! ..')
-            self.razonSocial.delete(100,'end')
+        if len(self.razonSocial.get()) > 50:
+            mssg.showerror('Atención!!','.. ¡Máximo 50 caracteres! ..')
+            self.razonSocial.delete(50,'end')
     
   def validaCiudad (self,event):
      if event:
-        if len(self.ciudad.get()) > 20:
-            mssg.showerror('Atención!!','.. ¡Máximo 20 caracteres! ..')
-            self.ciudad.delete(20,'end')
+        if len(self.ciudad.get()) > 15:
+            mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
+            self.ciudad.delete(15,'end')
   def validaDescrip (self,event):
      if event:
-        if len(self.descripcion.get()) > 100:
-            mssg.showerror('Atención!!','.. ¡Máximo 100 caracteres! ..')
-            self.descripcion.delete(100,'end')
+        if len(self.descripcion.get()) > 50:
+            mssg.showerror('Atención!!','.. ¡Máximo 50 caracteres! ..')
+            self.descripcion.delete(50,'end')
   def validaUnidad (self,event):
      if event:
         if len(self.unidad.get()) > 10:
@@ -507,6 +435,9 @@ class Inventario:
            if self.cantidad.get() != '':
             mssg.showerror('Atención!!','.. ¡Solo caracteres numericos! ..')
             self.cantidad.delete(0,'end')
+        if len(self.cantidad.get()) > 12:
+            mssg.showerror('Atención!!','.. ¡Máximo 12 caracteres! ..')
+            self.cantidad.delete(12,'end')
   def validaPrecio(self,event):
      if event: 
         try:
@@ -515,7 +446,73 @@ class Inventario:
            if self.precio.get() != '':
             mssg.showerror('Atención!!','.. ¡Solo caracteres numericos! ..')
             self.precio.delete(0,'end')  #Rutina de limpieza de datos
-
+        if len(self.precio.get()) > 15:
+            mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
+            self.unidad.delete(15,'end')
+  def valida_Fecha (self):
+      try:
+        nDia, nMes, nAño = (int (i) for i in str(self.fecha.get()).split('/'))
+        if (nDia in range(1, 32) and nMes in range (1,13) and nAño >= 1582): #revisa que el mes los dias y los años existan
+          if nAño % 4 !=0 or nAño % 400 !=0 and nAño % 100 == 0:
+              #Bisiesto = False
+              if ( nDia >= 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
+                mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
+                return False
+              else:
+                if nDia < 10 and nMes < 10:
+                    return True,(f"0{nDia}/0{nMes}/{nAño}")
+                elif nDia < 10 and nMes >=10:
+                   return True,(f"0{nDia}/{nMes}/{nAño}")
+                elif nDia >= 10 and nMes <10: 
+                   return True,(f"{nDia}/0{nMes}/{nAño}")
+                else:
+                   return True,(f"{nDia}/{nMes}/{nAño}")
+          else:
+              #Bisiesto = True
+              if (nDia > 29 and nMes == 2):
+                mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
+                return False
+              else:
+                if nDia < 10 and nMes < 10:
+                    return True,(f"0{nDia}/0{nMes}/{nAño}")
+                elif nDia < 10 and nMes >=10:
+                   return True,(f"0{nDia}/{nMes}/{nAño}")
+                elif nDia >= 10 and nMes <10: 
+                   return True,(f"{nDia}/0{nMes}/{nAño}")
+                else:
+                   return True,(f"{nDia}/{nMes}/{nAño}")
+        else:
+          mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')  
+          return False
+      except ValueError:
+         mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
+  def click (self,event):
+       if event :
+          self.treeProductos.bind("<Double-Button-1>", self.insert)
+  def insert (self,event):
+    if event:
+      self.limpiaCampos()
+      try:
+        self.codigo.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][0])
+        self.fecha.delete(0,'end')
+        self.fecha.config(foreground='black')
+        self.idNit.insert(0,self.treeProductos.item(self.treeProductos.selection())['text'])
+        self.descripcion.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][1])
+        self.unidad.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][2])
+        self.cantidad.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][3])
+        self.precio.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][4])
+        self.fecha.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][5])
+        query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+        parametros=(self.idNit.get())
+        db_rows = self.run_Query(query,(parametros,))
+        row=[]
+        for row in db_rows:
+          self.razonSocial.delete(0,'end')
+          self.razonSocial.insert(0, row[1])
+          self.ciudad.delete(0,'end')
+          self.ciudad.insert(0, row[2])
+      except:
+         pass
   def limpiaCampos(self):
       ''' Limpia todos los campos de captura'''
       Inventario.actualiza = None
@@ -588,10 +585,6 @@ class Inventario:
       self.fecha.insert(0,row[9])  
     self.limpiaCampos()
           
-  def adiciona_Registro(self, event=None):
-    '''Adiciona un producto a la BD si la validación es True'''
-    pass
-
   def editaTreeProveedores(self, event=None):
     ''' Edita una tupla del TreeView'''
     pass
@@ -602,13 +595,14 @@ class Inventario:
     query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
     query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
     conf = False
-    if self.idNit.get()!= '':
+    conf_p = False
+    if self.idNit.get()!= '' and self.codigo.get() == '':
       items = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
       for item in items:
           if item[0] == self.idNit.get():
             valor = mssg.askokcancel('Eliminar',f'Desea borrar el proveedor con Id {self.idNit.get()} junto con todos sus productos ?')
             conf = True
-            if valor:
+            if valor: 
               self.run_Query(query)
               self.run_Query(query_0)
               mssg.showinfo('','Proveedor y productos borrados exitosamente')
@@ -616,12 +610,13 @@ class Inventario:
               break
       if conf == False:
         mssg.showerror('','Id no encontrado')          
-    elif self.codigo.get() != '':
+    elif self.codigo.get() != '' and self.idNit.get() == '':
       items = self.run_Query(''' Select Codigo from Productos''').fetchall()
       for item in items:
           if item[0] == self.codigo.get():
-            valor = mssg.askokcancel('Eliminar',f'Desea borrar el producto de código {self.codigo.get()} ?')
+            valor = mssg.askokcancel('Eliminar',f'Desea borrar el producto de código {self.codigo .get()} de todos los proveedores ?')
             conf = True
+            conf_p = True
             if valor:
               self.run_Query(query_1)
               mssg.showinfo('','Producto borrado exitosamente')
@@ -629,16 +624,63 @@ class Inventario:
               break
       if conf == False:
         mssg.showerror('','Codigo no encontrado')  
+      if conf == True and conf_p == False:
+         mssg.showerror('','Id no encontrado')  
+    elif self.codigo.get() != '' and self.idNit.get() != '':
+      items = self.run_Query('''Select Codigo from Productos ''').fetchall()
+      items_p = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+      for item in items:
+          for  i in items_p:
+             if i[0] == self.idNit.get() and item[0] == self.codigo.get():
+                conf = True
+                conf_p = True
+      if conf and conf_p == True:
+        self.Emergente()
+      if conf == False:
+        mssg.showerror('','Codigo no encontrado')  
+      if conf_p == False:
+        mssg.showerror('','Id no encontrado')  
     else:
        mssg.showwarning('','Inserte el Id o código del proveedor o producto a eliminar')
-  '''def ventanaEmergente(self):
-     em=tk.Toplevel()   
-     em.geometry("100x200")
-     x = em.winfo_screenwidth() // 2 - 550 // 2  
-     y = em.winfo_screenheight() // 2 -250// 2  
-     em.geometry(f'{500}x{300}+{x}+{y}') 
-     em.deiconify()
-     em.mainloop'''
+  def Emergente(self):
+    #Crea la ventana emergente con las opciones
+    em=tk.Toplevel()   
+    em.iconbitmap("f2.ico")
+    em.resizable(False, False)
+    em.grab_set()
+    self.centra(em,410,155)
+    em.title("Manejo de Proveedores")
+    selection=tk.IntVar()
+    op1=tk.Radiobutton(em,text='''Eliminar el producto de todos los proveedores ''', variable=selection, value=1,font=('Calibri Light',11),padx=10)
+    op1.pack(anchor='nw',pady=5)
+    op2=tk.Radiobutton(em,text='''Eliminar el producto del proveedor seleccionado ''', variable=selection, value=2,font=('Calibri Light',11),padx=10)
+    op2.pack(anchor='nw')
+    op3=tk.Radiobutton(em,text='''Eliminar el proveedor seleccionado con todos sus productos''', variable=selection, value=3,font=('Calibri Light',11),padx=10)
+    op3.pack(anchor='nw',pady=5)
+    def acepta():
+      query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
+      query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
+      query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
+      query_2=f'''DELETE from Productos Where Codigo = {self.codigo.get()} AND IdNit = {self.idNit.get()}'''
+      if selection.get() == 1:
+        em.destroy()
+        self.run_Query(query_1)
+        mssg.showinfo('Eliminado','Producto eliminado exitosamente')
+      elif selection.get()==2:
+         em.destroy()
+         self.run_Query(query_2)
+         mssg.showinfo('Eliminado','Producto eliminado exitosamente del proveedor')
+      elif selection.get()==3:
+         em.destroy()
+         self.run_Query(query)
+         self.run_Query(query_0)
+         mssg.showinfo('Eliminado','Proveedor eliminado exitosamente con sus productos')
+
+    aceptar = ttk.Button(em,text='Acaptar',command=acepta,width=10)
+    aceptar.pack(anchor='s',side= 'left',padx=85,pady=12)
+    cancelar = ttk.Button(em,text='Cancelar',command=lambda :em.destroy(),width=10)
+    cancelar.pack(anchor='s',side='left',pady=12)
+    em.mainloop()
 
   def agregaProveedor(self):
    Registro_Prov=[(self.idNit.get(),self.razonSocial.get(),self.ciudad.get())]
@@ -656,21 +698,54 @@ class Inventario:
     elif textoActual == "":
         self.fecha.insert(0,"DD/MM/AAAA")
         self.fecha.config(foreground = 'grey')
-
+  def adiciona_Registro(self):
+      '''Adiciona un producto a la BD si la validación es True'''
+      if self.idNit.get()== '':
+         mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
+      else:
+        try:
+            self.agregaProveedor()
+            mssg.showinfo('','Proveedor creado exitosamente')
+            if self.codigo.get() != '':
+               if self.valida_Fecha():
+                try:
+                    self.agregaProducto(self.valida_Fecha()[1])
+                    mssg.showinfo('','Producto creado exitosamente')
+                    self.limpiaCampos()
+                except sqlite3.IntegrityError:
+                   mssg.showerror('Atención!!','Código de producto ya existente')
+               else:
+                mssg.showinfo('','No se creo el producto')
+        except sqlite3.IntegrityError:
+            if self.codigo.get() != '':
+               if self.valida_Fecha():
+                try:
+                    self.agregaProducto(self.valida_Fecha()[1])
+                    mssg.showinfo('','Producto creado exitosamente')
+                    self.limpiaCampos()
+                except sqlite3.IntegrityError:
+                   mssg.showerror('Atención!!','Código de producto ya existente')
+               else:
+                mssg.showinfo('','No se creo el producto')
+            else:
+               if (self.descripcion.get() or self.unidad.get() or self.cantidad.get() or self.fecha.get() or self.precio.get()) != '':
+                mssg.showerror('Atención!!','No ingresó código de producto')
+               else:
+                mssg.showerror('Atención!!','Proveedor ya existente')
 # Crea la base de datos
 def crear_base_datos():
   conn = sqlite3.connect('Inventario.db')
   c=conn.cursor()
   c.execute(""" CREATE TABLE IF NOT EXISTS Proveedores (
       idNitProv VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
-      Razon_Social VARCHAR(200),
-      Ciudad VARCHAR(20)
+      Razon_Social VARCHAR(50),
+      Ciudad VARCHAR(15)
   ); """)
 
   c.execute(""" CREATE TABLE IF NOT EXISTS Productos(
       IdNit VARCHAR(15) ,
       Codigo VARCHAR(15) NOT NULL,
-      Descripcion VARCHAR(300),
+      Descripcion VARCHAR(50),
       Und VARCHAR(10),
       Cantidad DOUBLE,
       Precio DOUBLE,
