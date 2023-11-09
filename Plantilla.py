@@ -7,7 +7,7 @@ import sqlite3
 import ctypes
 from os import path
 
-
+##hola
 class Inventario:
   def __init__(self, master=None):
     crear_base_datos()
