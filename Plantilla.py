@@ -208,127 +208,10 @@ class Inventario:
     self.frm2 = ttk.Frame(self.win)
     self.frm2.configure(height=self.cambiar_alto(100), width=800)
 
-    def buscar_prov():
-      # Busca los proveedores que comienzen por los caracteres buscados
-      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
-      parametros=(self.idNit.get()+"%")
-      db_rows = self.run_Query(query,(parametros,))
-      cant = 0
-      row=[]
-      # Limpia las celdas de proveedor y inserta los datos del proveedor
-      for row in db_rows:
-        cant += 1
-        self.razonSocial.delete(0,'end')
-        self.razonSocial.insert(0, row[1])
-        self.ciudad.delete(0,'end')
-        self.ciudad.insert(0, row[2])
-      # Busca los productos de los proveedores encontrados
-      query=('SELECT * FROM Productos WHERE IdNit LIKE ?')
-      db_rows = self.run_Query(query,(parametros,))
-      row=[]
-      # Inserta en el treeview los productos encontrados de los proveedores
-      for row in db_rows:
-        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
-      # Si hay varios proveedores limpia los campos y inserta el idNit buscado inicialmente
-      if cant != 1:
-        self.limpiaCampos()
-        self.idNit.insert(0, parametros[:-1])
-      if (list(self.treeProductos.get_children())==[]):
-        mssg.showerror('Atención!!','.. ¡Proveedor no encontrado! ..')
-
-    def buscar_prod():
-      # Busca los productos que comienzen por los caracteres buscados
-      query=('SELECT * FROM Productos WHERE codigo LIKE ?')
-      parametros=(self.codigo.get()+"%")
-      db_rows = self.run_Query(query,(parametros,))
-      self.limpiaCampos()
-      cant_prod = 0
-      row=[]
-      # Imprime en el treeview los productos encontrados
-      for row in db_rows:
-        cant_prod += 1
-        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
-      # Si solo hay un proveedor de el/los productos, imprime los datos de este prov
-      if cant_prod == 1:
-        query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
-        parametros=(row[0])
-        db_rows = self.run_Query(query,(parametros,))
-        row=[]
-      # Imprime en los campos los datos del proveedor
-        for row in db_rows:
-          self.idNit.insert(0, row[0])
-          self.razonSocial.delete(0,'end')
-          self.razonSocial.insert(0, row[1])
-          self.ciudad.delete(0,'end')
-          self.ciudad.insert(0, row[2])
-      if (list(self.treeProductos.get_children())==[]):
-        mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
-
-    def buscar_prod_prov():
-      # Busca los productos que el idNit y el codigo comienzen por los caracteres buscados
-      query=('SELECT * FROM Productos WHERE IdNit LIKE ? AND codigo LIKE ?')
-      parametro1=(self.idNit.get()+"%")
-      parametro2=(self.codigo.get()+"%")
-      db_rows = self.run_Query(query,(parametro1,parametro2))
-      cant_prod = 0
-      row = []
-      # Imprime en el treeview los productos encontrados
-      for row in db_rows:
-        cant_prod += 1
-        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
-      # Busca los proveedores de los productos encontrados
-      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
-      parametros=(row[0])
-      db_rows = self.run_Query(query,(parametros,))
-      row=[]
-      # Imprime en los campos los datos del proveedor
-      for row in db_rows:
-        self.razonSocial.delete(0,'end')
-        self.razonSocial.insert(0, row[1])
-        self.ciudad.delete(0,'end')
-        self.ciudad.insert(0, row[2])
-      # Si hay varios proveedores limpia los campos y inserta los datos buscados inicialmente
-      if cant_prod > 1:
-        self.limpiaCampos()
-        self.idNit.insert(0, parametro1[:-1])
-        self.codigo.insert(0, parametro2[:-1])
-      if (list(self.treeProductos.get_children())==[]):
-        mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
-
-    def buscar():
-        self.limpia_treeView()
-        # if self.idNit.get() == "" and self.codigo.get() == "":
-        #   mssg.showerror('Atención!!','.. ¡No busco nada! ..')
-        # elif self.idNit.get() != "" and self.codigo.get() == "":
-        #   # Busca proveedor
-        #   buscar_prov()
-        # elif self.idNit.get() == "" and self.codigo.get != "":
-        #   # Busca producto
-        #   buscar_prod()
-        # elif self.idNit.get() != "" and self.codigo.get != "":
-        #   # Busca producto de un proveedor
-        #   buscar_prod_prov()
-
-        # Logica para buscar proveedores y productos
-        if self.idNit.get() != "":
-          if self.codigo.get() == "":
-            # Busca proveedor
-            buscar_prov()
-          else:
-            # Busca producto de un proveedor
-            buscar_prod_prov()
-        else:
-          if self.codigo.get() != "":
-            # Busca producto
-            buscar_prod()
-          else:
-            mssg.showerror('Atención!!','.. ¡No busco nada! ..')
-
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
-    self.btnBuscar.configure(text='Buscar', command=buscar)
+    self.btnBuscar.configure(text='Buscar', command=self.buscar)
     self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
-
 
     #Botón para Guardar los datos
     self.btnGrabar = ttk.Button(self.frm2)
@@ -591,9 +474,11 @@ class Inventario:
       
   def eliminaRegistro(self):
     '''Elimina un Registro en la BD'''
-    query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
-    query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
-    query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
+    query = f'''DELETE from Proveedores Where IdNitProv = ?'''
+    query_0=f'''DELETE from Productos Where IdNit = ?'''
+    parametro = (self.idNit.get())
+    query_1=f'''DELETE from Productos Where Codigo = ?'''
+    parametro1 = (self.codigo.get())
     conf = False
     conf_p = False
     if self.idNit.get()!= '' and self.codigo.get() == '':
@@ -602,9 +487,9 @@ class Inventario:
           if item[0] == self.idNit.get():
             valor = mssg.askokcancel('Eliminar',f'Desea borrar el proveedor con Id {self.idNit.get()} junto con todos sus productos ?')
             conf = True
-            if valor: 
-              self.run_Query(query)
-              self.run_Query(query_0)
+            if valor:
+              self.run_Query(query,(parametro,))
+              self.run_Query(query_0,(parametro,))
               mssg.showinfo('','Proveedor y productos borrados exitosamente')
               self.limpiaCampos()
               break
@@ -618,7 +503,7 @@ class Inventario:
             conf = True
             conf_p = True
             if valor:
-              self.run_Query(query_1)
+              self.run_Query(query_1,(parametro1,))
               mssg.showinfo('','Producto borrado exitosamente')
               self.limpiaCampos()
               break
@@ -698,6 +583,111 @@ class Inventario:
     elif textoActual == "":
         self.fecha.insert(0,"DD/MM/AAAA")
         self.fecha.config(foreground = 'grey')
+
+  def buscar_prov(self):
+      # Busca los proveedores que comienzen por los caracteres buscados
+      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+      parametros=(self.idNit.get()+"%")
+      db_rows = self.run_Query(query,(parametros,))
+      cant = 0
+      row=[]
+      # Limpia las celdas de proveedor y inserta los datos del proveedor
+      for row in db_rows:
+        cant += 1
+        self.razonSocial.delete(0,'end')
+        self.razonSocial.insert(0, row[1])
+        self.ciudad.delete(0,'end')
+        self.ciudad.insert(0, row[2])
+      # Busca los productos de los proveedores encontrados
+      query=('SELECT * FROM Productos WHERE IdNit LIKE ?')
+      db_rows = self.run_Query(query,(parametros,))
+      row=[]
+      # Inserta en el treeview los productos encontrados de los proveedores
+      for row in db_rows:
+        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+      # Si hay varios proveedores limpia los campos y inserta el idNit buscado inicialmente
+      if cant != 1:
+        self.limpiaCampos()
+        self.idNit.insert(0, parametros[:-1])
+      if (list(self.treeProductos.get_children())==[]):
+        mssg.showerror('Atención!!','.. ¡Proveedor no encontrado! ..')
+
+  def buscar_prod(self):
+      # Busca los productos que comienzen por los caracteres buscados
+      query=('SELECT * FROM Productos WHERE codigo LIKE ?')
+      parametros=(self.codigo.get()+"%")
+      db_rows = self.run_Query(query,(parametros,))
+      self.limpiaCampos()
+      cant_prod = 0
+      row=[]
+      # Imprime en el treeview los productos encontrados
+      for row in db_rows:
+        cant_prod += 1
+        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+      # Si solo hay un proveedor de el/los productos, imprime los datos de este prov
+      if cant_prod == 1:
+        query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+        parametros=(row[0])
+        db_rows = self.run_Query(query,(parametros,))
+        row=[]
+      # Imprime en los campos los datos del proveedor
+        for row in db_rows:
+          self.idNit.insert(0, row[0])
+          self.razonSocial.delete(0,'end')
+          self.razonSocial.insert(0, row[1])
+          self.ciudad.delete(0,'end')
+          self.ciudad.insert(0, row[2])
+      if (list(self.treeProductos.get_children())==[]):
+        mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
+
+  def buscar_prod_prov(self):
+      # Busca los productos que el idNit y el codigo comienzen por los caracteres buscados
+      query=('SELECT * FROM Productos WHERE IdNit LIKE ? AND codigo LIKE ?')
+      parametro1=(self.idNit.get()+"%")
+      parametro2=(self.codigo.get()+"%")
+      db_rows = self.run_Query(query,(parametro1,parametro2))
+      cant_prod = 0
+      row = []
+      # Imprime en el treeview los productos encontrados
+      for row in db_rows:
+        cant_prod += 1
+        self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+      # Busca los proveedores de los productos encontrados
+      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+      parametros=(row[0])
+      db_rows = self.run_Query(query,(parametros,))
+      row=[]
+      # Imprime en los campos los datos del proveedor
+      for row in db_rows:
+        self.razonSocial.delete(0,'end')
+        self.razonSocial.insert(0, row[1])
+        self.ciudad.delete(0,'end')
+        self.ciudad.insert(0, row[2])
+      # Si hay varios proveedores limpia los campos y inserta los datos buscados inicialmente
+      if cant_prod > 1:
+        self.limpiaCampos()
+        self.idNit.insert(0, parametro1[:-1])
+        self.codigo.insert(0, parametro2[:-1])
+      if (list(self.treeProductos.get_children())==[]):
+        mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
+
+  def buscar(self):
+        self.limpia_treeView()
+        # Logica para buscar proveedores y productos
+        if self.idNit.get() != "":
+          if self.codigo.get() == "":
+            # Busca proveedor
+            self.buscar_prov()
+          else:
+            # Busca producto de un proveedor
+            self.buscar_prod_prov()
+        else:
+          if self.codigo.get() != "":
+            # Busca producto
+            self.buscar_prod()
+          else:
+            mssg.showerror('Atención!!','.. ¡No busco nada! ..')
+  
   def adiciona_Registro(self):
       '''Adiciona un producto a la BD si la validación es True'''
       if self.idNit.get()== '':
