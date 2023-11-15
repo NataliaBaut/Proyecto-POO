@@ -584,6 +584,10 @@ class Inventario:
         self.fecha.insert(0,"DD/MM/AAAA")
         self.fecha.config(foreground = 'grey')
 
+####################
+### BOTON BUSCAR ###
+####################
+
   def buscar_prov(self):
       # Busca los proveedores que comienzen por los caracteres buscados
       query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
@@ -652,24 +656,26 @@ class Inventario:
       for row in db_rows:
         cant_prod += 1
         self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
-      # Busca los proveedores de los productos encontrados
-      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
-      parametros=(row[0])
-      db_rows = self.run_Query(query,(parametros,))
-      row=[]
-      # Imprime en los campos los datos del proveedor
-      for row in db_rows:
-        self.razonSocial.delete(0,'end')
-        self.razonSocial.insert(0, row[1])
-        self.ciudad.delete(0,'end')
-        self.ciudad.insert(0, row[2])
-      # Si hay varios proveedores limpia los campos y inserta los datos buscados inicialmente
-      if cant_prod > 1:
-        self.limpiaCampos()
-        self.idNit.insert(0, parametro1[:-1])
-        self.codigo.insert(0, parametro2[:-1])
+      
       if (list(self.treeProductos.get_children())==[]):
         mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
+      else:
+        # Busca los proveedores de los productos encontrados  
+        query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+        parametros=(row[0])
+        db_rows = self.run_Query(query,(parametros,))
+        row=[]
+        # Imprime en los campos los datos del proveedor
+        for row in db_rows:
+          self.razonSocial.delete(0,'end')
+          self.razonSocial.insert(0, row[1])
+          self.ciudad.delete(0,'end')
+          self.ciudad.insert(0, row[2])
+        # Si hay varios proveedores limpia los campos y inserta los datos buscados inicialmente
+        if cant_prod > 1:
+          self.limpiaCampos()
+          self.idNit.insert(0, parametro1[:-1])
+          self.codigo.insert(0, parametro2[:-1])
 
   def buscar(self):
         self.limpia_treeView()
@@ -687,7 +693,9 @@ class Inventario:
             self.buscar_prod()
           else:
             mssg.showerror('Atención!!','.. ¡No busco nada! ..')
-  
+
+############################################################
+
   def adiciona_Registro(self):
       '''Adiciona un producto a la BD si la validación es True'''
       if self.idNit.get()== '':
