@@ -23,7 +23,7 @@ class Inventario:
     self.alto_p = user32.GetSystemMetrics(1)
     ancho = 830 
     alto = self.cambiar_alto(840)
-    actualiza = None
+    self.actualiza = False
   
     # Crea ventana principal
     self.win = tk.Tk() 
@@ -55,7 +55,9 @@ class Inventario:
     self.idNit = ttk.Entry(self.frm1)
     self.idNit.configure(takefocus=True)
     self.idNit.place(anchor="nw", x=50, y=self.cambiar_alto(40))
-    self.idNit.bind("<FocusOut>", self.validaIdNit)
+    self.idNit.bind("<BackSpace>", lambda _: self.idNit.delete(len(self.idNit.get())) )
+    self.idNit.bind("<space>", self.espacio)
+    self.idNit.bind("<KeyPress>", self.validaIdNit)
     self.idNit.focus()
 
     #Etiqueta razón social del Proveedor
@@ -67,7 +69,8 @@ class Inventario:
     self.razonSocial = ttk.Entry(self.frm1)
     self.razonSocial.configure(width=36)
     self.razonSocial.place(anchor="nw", x=290, y=self.cambiar_alto(40))
-    self.razonSocial.bind("<FocusOut>", self.validaRazon)
+    self.razonSocial.bind("<BackSpace>", lambda _: self.razonSocial.delete(len(self.razonSocial.get())) )
+    self.razonSocial.bind("<KeyPress>", self.validaRazon)
 
     #Etiqueta ciudad del Proveedor
     self.lblCiudad = ttk.Label(self.frm1)
@@ -78,7 +81,8 @@ class Inventario:
     self.ciudad = ttk.Entry(self.frm1)
     self.ciudad.configure(width=30)
     self.ciudad.place(anchor="nw", x=590, y=self.cambiar_alto(40))
-    self.ciudad.bind("<FocusOut>", self.validaCiudad)
+    self.ciudad.bind("<BackSpace>", lambda _: self.ciudad.delete(len(self.ciudad.get())))
+    self.ciudad.bind("<KeyPress>", self.validaCiudad)
 
     #Separador
     self.separador1 = ttk.Separator(self.frm1)
@@ -94,7 +98,9 @@ class Inventario:
     self.codigo = ttk.Entry(self.frm1)
     self.codigo.configure(width=15)
     self.codigo.place(anchor="nw", x=60, y=self.cambiar_alto(120))
-    self.codigo.bind("<FocusOut>", self.validaCodigo)
+    self.codigo.bind("<space>", self.espacio)
+    self.codigo.bind("<BackSpace>", lambda _: self.codigo.delete(len(self.codigo.get())))
+    self.codigo.bind("<KeyPress>", self.validaCodigo)
 
     #Etiqueta descripción del Producto
     self.lblDescripcion = ttk.Label(self.frm1)
@@ -105,7 +111,8 @@ class Inventario:
     self.descripcion = ttk.Entry(self.frm1)
     self.descripcion.configure(width=36)
     self.descripcion.place(anchor="nw", x=290, y=self.cambiar_alto(120))
-    self.descripcion.bind("<FocusOut>", self.validaDescrip)
+    self.descripcion.bind("<BackSpace>", lambda _: self.descripcion.delete(len(self.descripcion.get())))
+    self.descripcion.bind("<KeyPress>", self.validaDescrip)
 
     #Etiqueta unidad o medida del Producto
     self.lblUnd = ttk.Label(self.frm1)
@@ -116,7 +123,8 @@ class Inventario:
     self.unidad = ttk.Entry(self.frm1)
     self.unidad.configure(width=10)
     self.unidad.place(anchor="nw", x=590, y=self.cambiar_alto(120))
-    self.unidad.bind("<FocusOut>", self.validaUnidad)
+    self.unidad.bind("<BackSpace>", lambda _: self.unidad.delete(len(self.unidad.get())))
+    self.unidad.bind("<KeyPress>", self.validaUnidad)
 
     #Etiqueta cantidad del Producto
     self.lblCantidad = ttk.Label(self.frm1)
@@ -127,7 +135,7 @@ class Inventario:
     self.cantidad = ttk.Entry(self.frm1)
     self.cantidad.configure(width=12)
     self.cantidad.place(anchor="nw", x=70, y=self.cambiar_alto(170))
-    self.cantidad.bind("<FocusOut>", self.validaCtdad)
+    self.cantidad.bind("<KeyRelease>", self.validaCtdad)
 
     #Etiqueta precio del Producto
     self.lblPrecio = ttk.Label(self.frm1)
@@ -138,7 +146,7 @@ class Inventario:
     self.precio = ttk.Entry(self.frm1)
     self.precio.configure(width=15)
     self.precio.place(anchor="nw", x=220, y=self.cambiar_alto(170))
-    self.precio.bind("<FocusOut>", self.validaPrecio)
+    self.precio.bind("<KeyRelease>", self.validaPrecio)
 
     #Etiqueta fecha de compra del Producto
     self.lblFecha = ttk.Label(self.frm1)
@@ -215,12 +223,15 @@ class Inventario:
 
     #Botón para Guardar los datos
     self.btnGrabar = ttk.Button(self.frm2)
-    self.btnGrabar.configure(text='Grabar',command=self.adiciona_Registro)
+    if self.actualiza != True:
+      self.btnGrabar.configure(text='Grabar',command=self.adiciona_Registro)
+    else:
+       self.btnGrabar.configure(text='Grabar',command=self.adiciona_Registro)
     self.btnGrabar.place(anchor="nw", width=70, x=275, y=10)
 
     #Botón para Editar los datos
     self.btnEditar = ttk.Button(self.frm2)
-    self.btnEditar.configure(text='Editar')
+    self.btnEditar.configure(text='Editar',command = self.edita)
     self.btnEditar.place(anchor="nw", width=70, x=350, y=10)
 
     #Botón para Elimnar datos
@@ -230,7 +241,7 @@ class Inventario:
 
     #Botón para cancelar una operación
     self.btnCancelar = ttk.Button(self.frm2)
-    self.btnCancelar.configure(text='Cancelar', width=80,command = self.limpiaCampos)
+    self.btnCancelar.configure(text='Cancelar', width=80,command = self.cancelar)
     self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
 
     #Ubicación del Frame 2
@@ -258,58 +269,44 @@ class Inventario:
       win.deiconify() # Se usa para restaurar la ventana
 
  # Validaciones del sistema
+  def espacio(self,event):
+     if event:
+        mssg.showerror('Atención!!','.. ¡No se admiten espacios! ..')
+        return "break"
   def validaIdNit(self, event):
     ''' Valida que la longitud no sea mayor a 15 caracteres'''
+    
     if event:
-      if len(self.idNit.get()) > 15:
+      if len(self.idNit.get()) > 14:
          mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-         self.idNit.delete(15,'end')
-      num=0
-      ind = 0
-      for i in self.idNit.get():
-         num +=1
-         if i == ' ':
-            ind +=1
-            if ind == 1:
-             mssg.showerror('Atención!!','.. ¡No se admiten espacios! ..')
-            self.idNit.delete(num-ind)
-
+         return "break"
   def validaCodigo(self, event):
     ''' Valida que la longitud no sea mayor a 15 caracteres'''
     if event:
-        if len(self.codigo.get()) > 15:
+        if len(self.codigo.get()) > 14:
             mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-            self.codigo.delete(15,'end')
-    num=0
-    ind = 0
-    for i in self.codigo.get():
-         num +=1
-         if i == ' ':
-            ind +=1
-            if ind == 1:
-             mssg.showerror('Atención!!','.. ¡No se admiten espacios! ..')
-            self.codigo.delete(num-ind)
+            return'break'
   def validaRazon (self,event):
      if event:
-        if len(self.razonSocial.get()) > 50:
+        if len(self.razonSocial.get()) > 49:
             mssg.showerror('Atención!!','.. ¡Máximo 50 caracteres! ..')
-            self.razonSocial.delete(50,'end')
+            return 'break'
     
   def validaCiudad (self,event):
      if event:
-        if len(self.ciudad.get()) > 15:
+        if len(self.ciudad.get()) > 14:
             mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-            self.ciudad.delete(15,'end')
+            return 'break'
   def validaDescrip (self,event):
      if event:
-        if len(self.descripcion.get()) > 50:
+        if len(self.descripcion.get()) > 49:
             mssg.showerror('Atención!!','.. ¡Máximo 50 caracteres! ..')
-            self.descripcion.delete(50,'end')
+            return 'break'
   def validaUnidad (self,event):
      if event:
-        if len(self.unidad.get()) > 10:
+        if len(self.unidad.get()) > 9:
             mssg.showerror('Atención!!','.. ¡Máximo 10 caracteres! ..')
-            self.unidad.delete(10,'end')
+            return 'break'
   def validaCtdad(self,event):
      if event: 
         try:
@@ -317,7 +314,13 @@ class Inventario:
         except:
            if self.cantidad.get() != '':
             mssg.showerror('Atención!!','.. ¡Solo caracteres numericos! ..')
-            self.cantidad.delete(0,'end')
+            cont = 0
+            for i in self.cantidad.get():
+              try:
+                  int(i)
+                  cont +=1
+              except ValueError:
+               self.cantidad.delete(cont)
         if len(self.cantidad.get()) > 12:
             mssg.showerror('Atención!!','.. ¡Máximo 12 caracteres! ..')
             self.cantidad.delete(12,'end')
@@ -328,10 +331,16 @@ class Inventario:
         except:
            if self.precio.get() != '':
             mssg.showerror('Atención!!','.. ¡Solo caracteres numericos! ..')
-            self.precio.delete(0,'end')  #Rutina de limpieza de datos
+            cont = 0
+            for i in self.precio.get():
+              try:
+                  int(i)
+                  cont +=1
+              except ValueError:
+               self.precio.delete(cont)
         if len(self.precio.get()) > 15:
             mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-            self.unidad.delete(15,'end')
+            self.precio.delete(15,'end')
   def valida_Fecha (self):
       try:
         nDia, nMes, nAño = (int (i) for i in str(self.fecha.get()).split('/'))
@@ -398,8 +407,7 @@ class Inventario:
          pass
   def limpiaCampos(self):
       ''' Limpia todos los campos de captura'''
-      Inventario.actualiza = None
-      self.idNit.config(state = 'normal')
+      
       self.idNit.delete(0,'end')
       self.razonSocial.delete(0,'end')
       self.ciudad.delete(0,'end')
@@ -412,6 +420,7 @@ class Inventario:
       self.fecha.delete(0,'end')
       self.fecha.insert(0,'DD/MM/AAAA')
       self.fecha.config(foreground='grey')
+      
  
   #Rutina para cargar los datos en el árbol  
   def carga_Datos(self):
@@ -467,29 +476,71 @@ class Inventario:
       self.precio.insert(0,row[8])
       self.fecha.insert(0,row[9])  
     self.limpiaCampos()
-          
-  def editaTreeProveedores(self, event=None):
+
+  def edita(self):
     ''' Edita una tupla del TreeView'''
-    pass
+    if self.idNit.get() != '' or self.codigo.get() != '':
+       item_Pv = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+       item_Pd = self.run_Query(''' Select Codigo from Productos''').fetchall()
+       if self.codigo.get() == '':
+          for item in item_Pv:
+             if item[0] == self.idNit.get():
+                mssg.showinfo('Info','Para guardar los cambios presione grabar, para salir del modo editar presione cancelar')
+                item_Pv = True
+                self.actualiza= True
+                self.idNit.config(state="disabled")
+                self.codigo.config(state="disabled")
+                self.descripcion.config(state="disabled")
+                self.unidad.config(state="disabled")
+                self.cantidad.config(state="disabled")
+                self.precio.config(state="disabled")
+                self.fecha.config(state="disabled")
+                self.btnEliminar.configure(state="disabled")
+                self.btnBuscar.configure(state="disabled")
+                self.buscar_prod()
+                self.limpia_treeView()
+          if item_Pv != True:
+            mssg.showerror('Advertencia','Solo se pueden editar proveedores existentes')
+       elif self.idNit.get()=='':
+          mssg.showerror('Advertencia','Ingrese un id para poder editar')
+       else:
+          for item in item_Pv:
+             if item[0] == self.idNit.get():
+                item_Pv = True
+                for item in item_Pd:
+                  if item[0] == self.codigo.get():
+                      item_Pd = True
+                      self.actualiza= True
+                      self.idNit.config(state="disabled")
+                      self.codigo.config(state="disabled")
+                      self.btnEliminar.configure(state="disabled")
+                      self.btnBuscar.configure(state="disabled")
+                if item_Pd != True:
+                  mssg.showerror('Advertencia','Solo se pueden editar productos existentes') 
+          if item_Pv != True:
+           mssg.showerror('Advertencia','Solo se pueden editar proveedores existentes')
+    else:
+        mssg.showwarning ('Advertencia','Inserte un id o código o seleccione un producto del tree para editarlo')
+  def guardarCambios(self):
+     query= ''' '''
       
   def eliminaRegistro(self):
     '''Elimina un Registro en la BD'''
-    query = f'''DELETE from Proveedores Where IdNitProv = ?'''
-    query_0=f'''DELETE from Productos Where IdNit = ?'''
-    parametro = (self.idNit.get())
-    query_1=f'''DELETE from Productos Where Codigo = ?'''
-    parametro1 = (self.codigo.get())
-    conf = False
-    conf_p = False
+    query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
+    query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
+    query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
+    conf = None
+    conf_p = None
     if self.idNit.get()!= '' and self.codigo.get() == '':
       items = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+      conf = False
       for item in items:
           if item[0] == self.idNit.get():
             valor = mssg.askokcancel('Eliminar',f'Desea borrar el proveedor con Id {self.idNit.get()} junto con todos sus productos ?')
             conf = True
-            if valor:
-              self.run_Query(query,(parametro,))
-              self.run_Query(query_0,(parametro,))
+            if valor: 
+              self.run_Query(query)
+              self.run_Query(query_0)
               mssg.showinfo('','Proveedor y productos borrados exitosamente')
               self.limpiaCampos()
               break
@@ -497,36 +548,38 @@ class Inventario:
         mssg.showerror('','Id no encontrado')          
     elif self.codigo.get() != '' and self.idNit.get() == '':
       items = self.run_Query(''' Select Codigo from Productos''').fetchall()
+      conf_p=False
       for item in items:
           if item[0] == self.codigo.get():
             valor = mssg.askokcancel('Eliminar',f'Desea borrar el producto de código {self.codigo .get()} de todos los proveedores ?')
-            conf = True
-            conf_p = True
+            conf_p =True
             if valor:
-              self.run_Query(query_1,(parametro1,))
+              self.run_Query(query_1)
               mssg.showinfo('','Producto borrado exitosamente')
               self.limpiaCampos()
               break
       if conf == False:
         mssg.showerror('','Codigo no encontrado')  
-      if conf == True and conf_p == False:
-         mssg.showerror('','Id no encontrado')  
+      
     elif self.codigo.get() != '' and self.idNit.get() != '':
+  
       items = self.run_Query('''Select Codigo from Productos ''').fetchall()
       items_p = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
       for item in items:
           for  i in items_p:
-             if i[0] == self.idNit.get() and item[0] == self.codigo.get():
-                conf = True
+             if i[0] == self.idNit.get():
                 conf_p = True
+                if item[0] == self.codigo.get():
+                  conf = True
       if conf and conf_p == True:
         self.Emergente()
-      if conf == False:
+      if conf != True:
         mssg.showerror('','Codigo no encontrado')  
-      if conf_p == False:
+      if conf_p != True:
         mssg.showerror('','Id no encontrado')  
     else:
        mssg.showwarning('','Inserte el Id o código del proveedor o producto a eliminar')
+
   def Emergente(self):
     #Crea la ventana emergente con las opciones
     em=tk.Toplevel()   
@@ -566,7 +619,46 @@ class Inventario:
     cancelar = ttk.Button(em,text='Cancelar',command=lambda :em.destroy(),width=10)
     cancelar.pack(anchor='s',side='left',pady=12)
     em.mainloop()
-
+  def adiciona_Registro(self):
+      '''Adiciona un producto a la BD si la validación es True'''
+      if self.idNit.get()== '':
+         mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
+      else:
+        try:
+            self.agregaProveedor()
+            mssg.showinfo('','Proveedor creado exitosamente')
+            if self.codigo.get() != '':
+               if self.valida_Fecha():
+                try:
+                    self.agregaProducto(self.valida_Fecha()[1])
+                    mssg.showinfo('','Producto creado exitosamente')
+                    self.limpiaCampos()
+                except sqlite3.IntegrityError:
+                   mssg.showerror('Atención!!','Código de producto ya existente')
+               else:
+                mssg.showinfo('','No se creo el producto')
+        except sqlite3.IntegrityError:
+            if self.codigo.get() != '':
+               if self.valida_Fecha():
+                try:
+                    self.agregaProducto(self.valida_Fecha()[1])
+                    mssg.showinfo('','Producto creado exitosamente')
+                    self.limpiaCampos()
+                except sqlite3.IntegrityError:
+                   mssg.showerror('Atención!!','Código de producto ya existente')
+                   self.buscar_prov()
+                   self.limpia_treeView()
+               else:
+                mssg.showinfo('','No se creo el producto')
+            else:
+               if (self.descripcion.get() or self.unidad.get() or self.cantidad.get() or self.fecha.get() or self.precio.get()) != '':
+                mssg.showerror('Atención!!','No ingresó código de producto')
+                self.buscar_prov()
+                self.limpia_treeView()
+               else:
+                mssg.showerror('Atención!!','Proveedor ya existente')
+                self.buscar_prov()
+                self.limpia_treeView
   def agregaProveedor(self):
    Registro_Prov=[(self.idNit.get(),self.razonSocial.get(),self.ciudad.get())]
    query="INSERT INTO Proveedores VALUES (?,?,?)"
@@ -609,8 +701,8 @@ class Inventario:
       if cant != 1:
         self.limpiaCampos()
         self.idNit.insert(0, parametros[:-1])
-      if (list(self.treeProductos.get_children())==[]):
-        mssg.showerror('Atención!!','.. ¡Proveedor no encontrado! ..')
+        if (list(self.treeProductos.get_children())==[]):
+          mssg.showerror('Atención!!','.. ¡Proveedor no encontrado! ..')
 
   def buscar_prod(self):
       # Busca los productos que comienzen por los caracteres buscados
@@ -652,24 +744,25 @@ class Inventario:
       for row in db_rows:
         cant_prod += 1
         self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
-      # Busca los proveedores de los productos encontrados
-      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
-      parametros=(row[0])
-      db_rows = self.run_Query(query,(parametros,))
-      row=[]
-      # Imprime en los campos los datos del proveedor
-      for row in db_rows:
-        self.razonSocial.delete(0,'end')
-        self.razonSocial.insert(0, row[1])
-        self.ciudad.delete(0,'end')
-        self.ciudad.insert(0, row[2])
-      # Si hay varios proveedores limpia los campos y inserta los datos buscados inicialmente
-      if cant_prod > 1:
-        self.limpiaCampos()
-        self.idNit.insert(0, parametro1[:-1])
-        self.codigo.insert(0, parametro2[:-1])
       if (list(self.treeProductos.get_children())==[]):
         mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
+      else:
+        # Busca los proveedores de los productos encontrados
+        query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+        parametros=(row[0])
+        db_rows = self.run_Query(query,(parametros,))
+        row=[]
+        # Imprime en los campos los datos del proveedor
+        for row in db_rows:
+          self.razonSocial.delete(0,'end')
+          self.razonSocial.insert(0, row[1])
+          self.ciudad.delete(0,'end')
+          self.ciudad.insert(0, row[2])
+        # Si hay varios proveedores limpia los campos y inserta los datos buscados inicialmente
+        if cant_prod > 1:
+          self.limpiaCampos()
+          self.idNit.insert(0, parametro1[:-1])
+          self.codigo.insert(0, parametro2[:-1])
 
   def buscar(self):
         self.limpia_treeView()
@@ -688,40 +781,22 @@ class Inventario:
           else:
             mssg.showerror('Atención!!','.. ¡No busco nada! ..')
   
-  def adiciona_Registro(self):
-      '''Adiciona un producto a la BD si la validación es True'''
-      if self.idNit.get()== '':
-         mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
-      else:
-        try:
-            self.agregaProveedor()
-            mssg.showinfo('','Proveedor creado exitosamente')
-            if self.codigo.get() != '':
-               if self.valida_Fecha():
-                try:
-                    self.agregaProducto(self.valida_Fecha()[1])
-                    mssg.showinfo('','Producto creado exitosamente')
-                    self.limpiaCampos()
-                except sqlite3.IntegrityError:
-                   mssg.showerror('Atención!!','Código de producto ya existente')
-               else:
-                mssg.showinfo('','No se creo el producto')
-        except sqlite3.IntegrityError:
-            if self.codigo.get() != '':
-               if self.valida_Fecha():
-                try:
-                    self.agregaProducto(self.valida_Fecha()[1])
-                    mssg.showinfo('','Producto creado exitosamente')
-                    self.limpiaCampos()
-                except sqlite3.IntegrityError:
-                   mssg.showerror('Atención!!','Código de producto ya existente')
-               else:
-                mssg.showinfo('','No se creo el producto')
-            else:
-               if (self.descripcion.get() or self.unidad.get() or self.cantidad.get() or self.fecha.get() or self.precio.get()) != '':
-                mssg.showerror('Atención!!','No ingresó código de producto')
-               else:
-                mssg.showerror('Atención!!','Proveedor ya existente')
+  def cancelar(self):
+    self.actualiza = False
+    self.idNit.config(state = 'normal')
+    self.razonSocial.config(state = 'normal')
+    self.ciudad.config(state = 'normal')
+    self.codigo.config(state = 'normal')
+    self.descripcion.config(state="normal")
+    self.unidad.config(state="normal")
+    self.cantidad.config(state="normal")
+    self.precio.config(state="normal")
+    self.fecha.config(state="normal")
+    self.btnBuscar.configure(state="normal")
+    self.btnEliminar.configure(state="normal")
+    self.limpiaCampos()
+    self.limpia_treeView()
+
 # Crea la base de datos
 def crear_base_datos():
   conn = sqlite3.connect('Inventario.db')
