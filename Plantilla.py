@@ -28,7 +28,7 @@ class Inventario:
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("f2.ico")
+    #self.win.iconbitmap("f2.ico")
     self.win.resizable(False, False)
     self.win.title("Manejo de Proveedores") 
 
@@ -173,9 +173,19 @@ class Inventario:
     self.style.configure("estilo.Treeview.Heading", background='Azure', font=('Calibri Light', 10,'bold')) 
     self.style.layout("estilo.Treeview", [('estilo.Treeview.treearea', {'sticky': 'nswe'})])
     
-    #Árbol para mosrtar los datos de la B.D.
+    
     self.treeProductos = ttk.Treeview(self.frm1, style="estilo.Treeview")
     
+    #Quitar resizable de las columnas treeview
+    def prevent_resize(event):
+      if self.treeProductos.identify_region(event.x, event.y) == "separator":
+        return "break"
+      
+    self.treeProductos.bind('<Button-1>', prevent_resize)
+    self.treeProductos.bind('<Motion>', prevent_resize)
+
+
+    #Árbol para mosrtar los datos de la B.D.
     self.treeProductos.configure(selectmode="extended")
     self.treeProductos.bind("<<TreeviewSelect>>", self.click) #Une el evento de click a el tree
     # Etiquetas de las columnas para el TreeView
@@ -197,6 +207,8 @@ class Inventario:
     self.treeProductos.heading("Cantidad",    anchor="center", text='Cantidad')
     self.treeProductos.heading("Precio",      anchor="center", text='Precio')
     self.treeProductos.heading("Fecha",       anchor="center", text='Fecha')
+
+
 
     #Carga los datos en treeProductos
     #self.lee_treeProductos() 
@@ -251,9 +263,7 @@ class Inventario:
     # widget Principal del sistema
     self.mainwindow = self.win
 
-  def cambiar_alto(self, altura):
-     nuevo_alto = int((altura / 1080) * self.alto_p)
-     return nuevo_alto
+  def cambiar_alto(self, altura): return int((altura / 1080) * self.alto_p)
 
   #Fución de manejo de eventos del sistema
   def run(self):
