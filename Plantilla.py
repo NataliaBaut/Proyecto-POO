@@ -195,6 +195,14 @@ class Inventario:
 
     self.treeProductos["columns"]=("Codigo","Descripcion","Und","Cantidad","Precio","Fecha")
 
+    #Quitar resizable de las columnas treeview
+    def prevent_resize(event):
+      if self.treeProductos.identify_region(event.x, event.y) == "separator":
+        return "break"
+      
+    self.treeProductos.bind('<Button-1>', prevent_resize)
+    self.treeProductos.bind('<Motion>', prevent_resize)
+    
     # Características de las columnas del árbol
 
     self.treeProductos.column ("#0",          anchor="w",stretch=True,width=3)
