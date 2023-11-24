@@ -24,7 +24,7 @@ class Inventario:
     ancho = 830 
     alto = self.cambiar_alto(840)
     self.actualiza = False
-  
+    self.elimina = False
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
@@ -202,7 +202,7 @@ class Inventario:
       
     self.treeProductos.bind('<Button-1>', prevent_resize)
     self.treeProductos.bind('<Motion>', prevent_resize)
-    
+
     # Características de las columnas del árbol
 
     self.treeProductos.column ("#0",          anchor="w",stretch=True,width=3)
@@ -276,6 +276,43 @@ class Inventario:
 
     # widget Principal del sistema
     self.mainwindow = self.win
+
+
+
+    self.ventana= tk.Toplevel()
+    self.ventana.withdraw()
+    ancho=410
+    alto=155
+    self.ventana.resizable(False,False)
+
+    self.ventana.title("Manejo de Proveedores")
+    self.selection=tk.IntVar()
+    op1=tk.Radiobutton(self.ventana,text='''Eliminar el producto de todos los proveedores ''', variable=self.selection, value=1,font=('Calibri Light',11),padx=10)
+    op1.pack(anchor='nw',pady=5)
+    op2=tk.Radiobutton(self.ventana,text='''Eliminar el producto del proveedor seleccionado ''', variable=self.selection, value=2,font=('Calibri Light',11),padx=10)
+    op2.pack(anchor='nw')
+    op3=tk.Radiobutton(self.ventana,text='''Eliminar el proveedor seleccionado con todos sus productos''', variable=self.selection, value=3,font=('Calibri Light',11),padx=10)
+    op3.pack(anchor='nw',pady=5)
+    aceptar = ttk.Button(self.ventana,text='Aceptar',width=10,command=self.acepta)
+    aceptar.pack(anchor='s',pady=5)
+  def acepta(self):
+      query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
+      query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
+      query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
+      query_2=f'''DELETE from Productos Where Codigo = {self.codigo.get()} AND IdNit = {self.idNit.get()}'''
+      if self.selection.get() == 1:
+        self.ventana.withdraw()
+        self.run_Query(query_1)
+        mssg.showinfo('Eliminado','Producto eliminado exitosamente')
+      elif self.selection.get()==2:
+         self.ventana.withdraw()
+         self.run_Query(query_2)
+         mssg.showinfo('Eliminado','Producto eliminado exitosamente del proveedor')
+      elif self.selection.get()==3:
+         self.ventana.withdraw()
+         self.run_Query(query)
+         self.run_Query(query_0)
+         mssg.showinfo('Eliminado','Proveedor eliminado exitosamente con sus productos')
 
   def cambiar_alto(self, altura):
      nuevo_alto = int((altura / 1080) * self.alto_p)
@@ -400,10 +437,9 @@ class Inventario:
                    return True,(f"{nDia}/{nMes}/{nAño}")
         else:
           mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')  
-          return False,False
+          return False
       except ValueError:
          mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
-         return False,False
   
   #Revisa que se haga doble click
 
@@ -531,11 +567,10 @@ class Inventario:
                 self.unidad.config(state="disabled")
                 self.cantidad.config(state="disabled")
                 self.precio.config(state="disabled")
+                self.fecha.delete(0, tk.END)
                 self.fecha.config(state="disabled")
                 self.btnEliminar.configure(state="disabled")
                 self.btnBuscar.configure(state="disabled")
-                self.buscar()
-                self.limpia_treeView()
                 self.btnGrabar.configure(command=self.guardarCambios)
           if item_Pv != True:
             mssg.showerror('Advertencia','Solo se pueden editar proveedores existentes')
@@ -554,7 +589,6 @@ class Inventario:
                       self.codigo.config(state="disabled")
                       self.btnEliminar.configure(state="disabled")
                       self.btnBuscar.configure(state="disabled")
-                      self.buscar()
                       self.btnGrabar.configure(command=self.guardarCambios)
                 if item_Pd != True:
                   mssg.showerror('Advertencia','Solo se pueden editar productos existentes') 
@@ -567,7 +601,7 @@ class Inventario:
 
   def guardarCambios(self):
     query_Prov= f'''UPDATE Proveedores SET Razon_Social = '{self.razonSocial.get()}', Ciudad = '{self.ciudad.get()}' WHERE idNitProv = {self.idNit.get()} '''
-    query_Prod= f'''UPDATE Productos SET Descripcion = '{self.descripcion.get()}', Und = '{self.unidad.get()}', Cantidad = '{self.cantidad.get()}', Precio = {self.precio.get()}, Fecha = '{self.fecha.get()}' WHERE idNit = {self.idNit.get()} '''
+    query_Prod= f'''UPDATE Productos SET Descripcion = '{self.descripcion.get()}', Und = '{self.unidad.get()}', Cantidad = '{self.cantidad.get()}', Precio = '{self.precio.get()}', Fecha = '{self.fecha.get()}' WHERE idNit = {self.idNit.get()} and Codigo = {self.codigo.get()}'''
     if self.fecha.get() != 'DD/MM/AAAA':
       if self.valida_Fecha()[0] ==True :
         self.run_Query(query_Prov)
@@ -594,7 +628,7 @@ class Inventario:
       conf = False
       for item in items:
           if item[0] == self.idNit.get():
-            valor = mssg.askokcancel('Eliminar',f'Desea borrar el proveedor con Id {self.idNit.get()} junto con todos sus productos ?')
+            valor = mssg.askyesno('Eliminar',f'Desea borrar el proveedor con Id {self.idNit.get()} junto con todos sus productos ?')
             conf = True
             if valor: 
               self.run_Query(query)
@@ -609,7 +643,7 @@ class Inventario:
       conf_p=False
       for item in items:
           if item[0] == self.codigo.get():
-            valor = mssg.askokcancel('Eliminar',f'Desea borrar el producto de código {self.codigo .get()} de todos los proveedores ?')
+            valor = mssg.askyesno('Eliminar',f'Desea borrar el producto de código {self.codigo .get()} de todos los proveedores ?')
             conf_p =True
             if valor:
               self.run_Query(query_1)
@@ -630,7 +664,22 @@ class Inventario:
                 if item[0] == self.codigo.get():
                   conf = True
       if conf and conf_p == True:
-        self.Emergente()
+        self.centra(self.ventana,410,155)
+        self.elimina=True
+        self.idNit.config(state="disabled")
+        self.razonSocial.config(state="disabled")
+        self.ciudad.config(state="disabled")
+        self.codigo.config(state="disabled")
+        self.descripcion.config(state="disabled")
+        self.unidad.config(state="disabled")
+        self.cantidad.config(state="disabled")
+        self.precio.config(state="disabled")
+        self.fecha.delete(0, tk.END)
+        self.fecha.config(state="disabled")
+        self.btnEditar.configure(state="disabled")
+        self.btnBuscar.configure(state="disabled")
+        self.btnGrabar.configure(state="disabled")
+  
       if conf != True:
         mssg.showerror('','Codigo no encontrado')  
       if conf_p != True:
@@ -638,90 +687,64 @@ class Inventario:
     else:
        mssg.showwarning('','Inserte el Id o código del proveedor o producto a eliminar')
 
-#Ventana emergente para el caso de meter codigo y nit
-
-  def Emergente(self):
-    #Crea la ventana emergente con las opciones
-    em=tk.Toplevel()   
-    em.iconbitmap("f2.ico")
-    em.resizable(False, False)
-    em.grab_set()
-    self.centra(em,410,155)
-    em.title("Manejo de Proveedores")
-    selection=tk.IntVar()
-    op1=tk.Radiobutton(em,text='''Eliminar el producto de todos los proveedores ''', variable=selection, value=1,font=('Calibri Light',11),padx=10)
-    op1.pack(anchor='nw',pady=5)
-    op2=tk.Radiobutton(em,text='''Eliminar el producto del proveedor seleccionado ''', variable=selection, value=2,font=('Calibri Light',11),padx=10)
-    op2.pack(anchor='nw')
-    op3=tk.Radiobutton(em,text='''Eliminar el proveedor seleccionado con todos sus productos''', variable=selection, value=3,font=('Calibri Light',11),padx=10)
-    op3.pack(anchor='nw',pady=5)
-    def acepta():
-      query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
-      query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
-      query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
-      query_2=f'''DELETE from Productos Where Codigo = {self.codigo.get()} AND IdNit = {self.idNit.get()}'''
-      if selection.get() == 1:
-        em.destroy()
-        self.run_Query(query_1)
-        mssg.showinfo('Eliminado','Producto eliminado exitosamente')
-      elif selection.get()==2:
-         em.destroy()
-         self.run_Query(query_2)
-         mssg.showinfo('Eliminado','Producto eliminado exitosamente del proveedor')
-      elif selection.get()==3:
-         em.destroy()
-         self.run_Query(query)
-         self.run_Query(query_0)
-         mssg.showinfo('Eliminado','Proveedor eliminado exitosamente con sus productos')
-
-    aceptar = ttk.Button(em,text='Acaptar',command=acepta,width=10)
-    aceptar.pack(anchor='s',side= 'left',padx=85,pady=12)
-    cancelar = ttk.Button(em,text='Cancelar',command=lambda :em.destroy(),width=10)
-    cancelar.pack(anchor='s',side='left',pady=12)
-    em.mainloop()
-  
   #Funcion para adicionar registro si es un producto, proveedor o ambos
 
   def adiciona_Registro(self):
       '''Adiciona un producto a la BD si la validación es True'''
-      if self.idNit.get()== '':
+      if self.idNit.get()== '': #Revisa que haya un id, necesario para grabar cualquier cosa
          mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
       else:
-        try:
-            self.agregaProveedor()
-            mssg.showinfo('','Proveedor creado exitosamente')
+        Existe=False
+        items = self.run_Query('''Select IdNitProv from Proveedores''').fetchall()
+        for item in items:
+          if self.idNit.get() == item[0]:
+            Existe = True
             if self.codigo.get() != '':
-               if self.valida_Fecha():
+              if self.valida_Fecha():
                 try:
                     self.agregaProducto(self.valida_Fecha()[1])
                     mssg.showinfo('','Producto creado exitosamente')
                     self.limpiaCampos()
+                    return
                 except sqlite3.IntegrityError:
-                   mssg.showerror('Atención!!','Código de producto ya existente')
-               else:
+                  mssg.showerror('Atención!!','Código de producto ya existente')
+                  self.buscar_prov()
+                  self.limpia_treeView()
+                  return
+              else:
                 mssg.showinfo('','No se creo el producto')
-        except sqlite3.IntegrityError:
-            if self.codigo.get() != '':
-               if self.valida_Fecha():
-                try:
-                    self.agregaProducto(self.valida_Fecha()[1])
-                    mssg.showinfo('','Producto creado exitosamente')
-                    self.limpiaCampos()
-                except sqlite3.IntegrityError:
-                   mssg.showerror('Atención!!','Código de producto ya existente')
-                   self.buscar_prov()
-                   self.limpia_treeView()
-               else:
-                mssg.showinfo('','No se creo el producto')
+                return
             else:
-               if (self.descripcion.get() or self.unidad.get() or self.cantidad.get() or self.fecha.get() or self.precio.get()) != '':
+              if (self.descripcion.get() or self.unidad.get() or self.cantidad.get() or self.precio.get()) != '':
                 mssg.showerror('Atención!!','No ingresó código de producto')
                 self.buscar_prov()
                 self.limpia_treeView()
-               else:
+                return
+              else:
                 mssg.showerror('Atención!!','Proveedor ya existente')
                 self.buscar_prov()
-                self.limpia_treeView
+                self.limpia_treeView()
+                return
+        if Existe == False:
+          if self.codigo.get() != '': #Si hay contenido en el codigo
+              if self.valida_Fecha(): #y la fecha es valida
+                try:
+                    self.agregaProducto(self.valida_Fecha()[1])
+                    self.limpiaCampos()
+                except sqlite3.IntegrityError: #Codigo ya existente
+                    mssg.showerror('Atención!!','Código de producto ya existente')
+                    return
+                self.agregaProveedor()
+                mssg.showinfo('','Proveedor creado exitosamente')
+                mssg.showinfo('','Producto creado exitosamente')
+                return
+              else:
+                mssg.showinfo('','No se creo el producto')
+                return
+          else:#Codigo vacio
+              self.agregaProveedor()
+              mssg.showinfo('','Proveedor creado exitosamente')
+              return
   
   #Caso adiciona Proveedor
 
@@ -857,21 +880,29 @@ class Inventario:
   #Cancela las acciones
 
   def cancelar(self):
-    self.actualiza = False
-    self.idNit.config(state = 'normal')
-    self.razonSocial.config(state = 'normal')
-    self.ciudad.config(state = 'normal')
-    self.codigo.config(state = 'normal')
-    self.descripcion.config(state="normal")
-    self.unidad.config(state="normal")
-    self.cantidad.config(state="normal")
-    self.precio.config(state="normal")
-    self.fecha.config(state="normal")
-    self.btnBuscar.configure(state="normal")
-    self.btnEliminar.configure(state="normal")
-    self.btnGrabar.configure(command=self.adiciona_Registro)
-    self.limpiaCampos()
-    self.limpia_treeView()
+
+    if (self.actualiza == True) or (self.elimina==True):
+      self.actualiza = False
+      self.elimina = False
+      self.idNit.config(state = 'normal')
+      self.razonSocial.config(state = 'normal')
+      self.ciudad.config(state = 'normal')
+      self.codigo.config(state = 'normal')
+      self.descripcion.config(state="normal")
+      self.unidad.config(state="normal")
+      self.cantidad.config(state="normal")
+      self.precio.config(state="normal")
+      self.fecha.config(state="normal")
+      self.btnBuscar.configure(state="normal")
+      self.btnEliminar.configure(state="normal")
+      self.btnGrabar.configure(command=self.adiciona_Registro)
+      self.fecha.delete(0,tk.END)
+      self.fecha.insert(0,"DD/MM/AAAA")
+      self.fecha.config(foreground='grey')
+      mssg.showinfo('Modo editar','Ha salido del modo editar')
+    else:
+      self.limpiaCampos()
+      self.limpia_treeView()
 
 # Crea la base de datos
 def crear_base_datos():
@@ -891,7 +922,6 @@ def crear_base_datos():
       Cantidad DOUBLE,
       Precio DOUBLE,
       Fecha DATE,
-      FOREIGN KEY (IdNit) REFERENCES Proveedores(idNitProv)
       PRIMARY KEY (IdNit, codigo)
   ) """)
   # c.execute("INSERT INTO Proveedores ")
