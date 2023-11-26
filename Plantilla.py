@@ -28,9 +28,10 @@ class Inventario:
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("f2.ico")
+    #self.win.iconbitmap("f2.ico")
     self.win.resizable(False, False)
     self.win.title("Manejo de Proveedores") 
+    self.ventana_emergente_abierta = False
 
     #Centra la pantalla
     self.centra(self.win,ancho,alto)
@@ -269,6 +270,8 @@ class Inventario:
     self.btnCancelar = ttk.Button(self.frm2)
     self.btnCancelar.configure(text='Cancelar', width=80,command = self.cancelar)
     self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
+    #cancelar = ttk.Button(em,text='Cancelar',command=lambda :em.destroy(),width=10)
+    #cancelar.pack(anchor='s',side='left',pady=12)
 
     #Ubicación del Frame 2
     self.frm2.place(anchor="nw", height=60, relwidth=1, y=self.cambiar_alto(755))
@@ -641,19 +644,24 @@ class Inventario:
 #Ventana emergente para el caso de meter codigo y nit
 
   def Emergente(self):
+
+    self.ventana_emergente_abierta = True
+    self.em = True
+
     #Crea la ventana emergente con las opciones
-    em=tk.Toplevel()   
-    em.iconbitmap("f2.ico")
-    em.resizable(False, False)
-    em.grab_set()
-    self.centra(em,410,155)
-    em.title("Manejo de Proveedores")
+    self.em=tk.Toplevel(self.win)   
+    #em.iconbitmap("f2.ico")
+    #em.resizable(False, False)
+    
+    self.centra(self.em,470,210)
+    self.em.title("Manejo de Proveedores")
+    self.em.overrideredirect(True)
     selection=tk.IntVar()
-    op1=tk.Radiobutton(em,text='''Eliminar el producto de todos los proveedores ''', variable=selection, value=1,font=('Calibri Light',11),padx=10)
+    op1=tk.Radiobutton(self.em,text='''Eliminar el producto de todos los proveedores ''', variable=selection, value=1,font=('Calibri Light',11),padx=10)
     op1.pack(anchor='nw',pady=5)
-    op2=tk.Radiobutton(em,text='''Eliminar el producto del proveedor seleccionado ''', variable=selection, value=2,font=('Calibri Light',11),padx=10)
+    op2=tk.Radiobutton(self.em,text='''Eliminar el producto del proveedor seleccionado ''', variable=selection, value=2,font=('Calibri Light',11),padx=10)
     op2.pack(anchor='nw')
-    op3=tk.Radiobutton(em,text='''Eliminar el proveedor seleccionado con todos sus productos''', variable=selection, value=3,font=('Calibri Light',11),padx=10)
+    op3=tk.Radiobutton(self.em,text='''Eliminar el proveedor seleccionado con todos sus productos''', variable=selection, value=3,font=('Calibri Light',11),padx=10)
     op3.pack(anchor='nw',pady=5)
     def acepta():
       query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
@@ -661,24 +669,30 @@ class Inventario:
       query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
       query_2=f'''DELETE from Productos Where Codigo = {self.codigo.get()} AND IdNit = {self.idNit.get()}'''
       if selection.get() == 1:
-        em.destroy()
+        self.em.destroy()
         self.run_Query(query_1)
         mssg.showinfo('Eliminado','Producto eliminado exitosamente')
       elif selection.get()==2:
-         em.destroy()
+         self.em.destroy()
          self.run_Query(query_2)
          mssg.showinfo('Eliminado','Producto eliminado exitosamente del proveedor')
       elif selection.get()==3:
-         em.destroy()
+         self.em.destroy()
          self.run_Query(query)
          self.run_Query(query_0)
          mssg.showinfo('Eliminado','Proveedor eliminado exitosamente con sus productos')
 
-    aceptar = ttk.Button(em,text='Acaptar',command=acepta,width=10)
-    aceptar.pack(anchor='s',side= 'left',padx=85,pady=12)
-    cancelar = ttk.Button(em,text='Cancelar',command=lambda :em.destroy(),width=10)
-    cancelar.pack(anchor='s',side='left',pady=12)
-    em.mainloop()
+    aceptar = ttk.Button(self.em,text='Aceptar',command=acepta,width=10)
+    #aceptar.pack(anchor='s',side= 'left',padx=(10, 10), pady=12)
+    aceptar.place(relx=0.5, rely=0.5, anchor='center',  y=40)
+    #cancelar = ttk.Button(em,text='Cancelar',command=lambda :em.destroy(),width=10)
+    #cancelar.pack(anchor='s',side='left',pady=12)
+    self.btnBuscar['state'] = 'disabled'
+    self.btnGrabar['state'] = 'disabled'
+    self.btnEditar['state'] = 'disabled'
+    self.btnEliminar['state'] = 'disabled'
+
+    self.em.mainloop()
   
   #Funcion para adicionar registro si es un producto, proveedor o ambos
 
@@ -856,22 +870,27 @@ class Inventario:
 
   #Cancela las acciones
 
-  def cancelar(self):
-    self.actualiza = False
-    self.idNit.config(state = 'normal')
-    self.razonSocial.config(state = 'normal')
-    self.ciudad.config(state = 'normal')
-    self.codigo.config(state = 'normal')
-    self.descripcion.config(state="normal")
-    self.unidad.config(state="normal")
-    self.cantidad.config(state="normal")
-    self.precio.config(state="normal")
-    self.fecha.config(state="normal")
-    self.btnBuscar.configure(state="normal")
-    self.btnEliminar.configure(state="normal")
-    self.btnGrabar.configure(command=self.adiciona_Registro)
-    self.limpiaCampos()
-    self.limpia_treeView()
+  def cancelar(self):  
+    try:  
+      self.em.withdraw()
+    finally:
+      self.actualiza = False
+      self.idNit.config(state = 'normal')
+      self.razonSocial.config(state = 'normal')
+      self.ciudad.config(state = 'normal')
+      self.codigo.config(state = 'normal')
+      self.descripcion.config(state="normal")
+      self.unidad.config(state="normal")
+      self.cantidad.config(state="normal")
+      self.precio.config(state="normal")
+      self.fecha.config(state="normal")
+      self.btnBuscar.configure(state="normal")
+      self.btnEliminar.configure(state="normal")
+      self.btnGrabar.configure(command=self.adiciona_Registro)
+      self.btnGrabar['state'] = 'enabled'
+      self.btnEditar['state'] = 'enabled'
+      self.limpiaCampos()
+      self.limpia_treeView()
 
 # Crea la base de datos
 def crear_base_datos():
