@@ -6,6 +6,7 @@ from tkinter import messagebox as mssg
 import sqlite3
 import ctypes
 from os import path
+from datetime import date
 
 
 class Inventario:
