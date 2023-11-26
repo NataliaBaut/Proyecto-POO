@@ -392,7 +392,7 @@ class Inventario:
         if (nDia in range(1, 32) and nMes in range (1,13) and nAño >= 1582): #revisa que el mes los dias y los años existan
             if nAño % 4 !=0 or nAño % 400 !=0 and nAño % 100 == 0:
                 #Bisiesto = False
-                if ( nDia >= 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia >= 31):
+                if ( nDia >= 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
                   mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
                   return False
                 else:
@@ -411,7 +411,7 @@ class Inventario:
                        return True,(f"{nDia}/{nMes}/{nAño}")
             else:
                 #Bisiesto = True
-                if (nDia > 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia >= 31):
+                if (nDia > 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
                   mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
                   return False
                 else:
