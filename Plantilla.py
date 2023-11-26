@@ -6,6 +6,7 @@ from tkinter import messagebox as mssg
 import sqlite3
 import ctypes
 from os import path
+from datetime import date
 
 
 class Inventario:
@@ -165,6 +166,9 @@ class Inventario:
     self.fecha = ttk.Entry(self.frm1)
     self.fecha.configure(width=14,foreground='grey')
     self.fecha.place(anchor="nw", x=390, y=self.cambiar_alto(170))
+    #Validacion de fecha
+    self.fecha.bind("<KeyPress>", self.valida_Fecha)
+    self.fecha.bind("<BackSpace>", lambda _:self.fecha.delete(tk.END))  # Permite borrar
     #Mostrar formato
     self.fecha.insert(0, 'DD/MM/AAAA')
     self.fecha.bind("<FocusIn>", self.formato)
@@ -333,7 +337,7 @@ class Inventario:
             mssg.showerror('Atención!!','.. ¡Máximo 10 caracteres! ..')
             return 'break'
   def validaCtdad(self,event):
-     if event: 
+     if event:
         try:
             float(self.cantidad.get())
         except:
@@ -366,44 +370,65 @@ class Inventario:
         if len(self.precio.get()) > 15:
             mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
             self.precio.delete(15,'end')
-  def valida_Fecha (self):
+  def valida_Fecha (self, event):
+    if event.char.isdigit():
+        letras = 0
+        for letra in self.fecha.get():
+              letras += 1
+
+        if letras == 2:
+            self.fecha.insert(2,"/")
+        elif letras == 5:
+            self.fecha.insert(5,"/")
+        elif letras == 10:
+            return "break"
+    else:
+      return "break"
+      
+  def valida_Fecha_Final (self):
+      today = date.today()
       try:
         nDia, nMes, nAño = (int (i) for i in str(self.fecha.get()).split('/'))
+        fecha_Ingresada = date(nAño, nMes, nDia)
         if (nDia in range(1, 32) and nMes in range (1,13) and nAño >= 1582): #revisa que el mes los dias y los años existan
-          if nAño % 4 !=0 or nAño % 400 !=0 and nAño % 100 == 0:
-              #Bisiesto = False
-              if ( nDia >= 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
+          if fecha_Ingresada > today: # comprueba que la fecha no sea mayor que hoy
                 mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
-                return False
-              else:
-                if nDia < 10 and nMes < 10:
-                    return True,(f"0{nDia}/0{nMes}/{nAño}")
-                elif nDia < 10 and nMes >=10:
-                   return True,(f"0{nDia}/{nMes}/{nAño}")
-                elif nDia >= 10 and nMes <10: 
-                   return True,(f"{nDia}/0{nMes}/{nAño}")
-                else:
-                   return True,(f"{nDia}/{nMes}/{nAño}")
+                return False,False
           else:
-              #Bisiesto = True
-              if (nDia > 29 and nMes == 2):
-                mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
-                return False
-              else:
-                if nDia < 10 and nMes < 10:
-                    return True,(f"0{nDia}/0{nMes}/{nAño}")
-                elif nDia < 10 and nMes >=10:
-                   return True,(f"0{nDia}/{nMes}/{nAño}")
-                elif nDia >= 10 and nMes <10: 
-                   return True,(f"{nDia}/0{nMes}/{nAño}")
+            if nAño % 4 !=0 or nAño % 400 !=0 and nAño % 100 == 0:
+                #Bisiesto = False
+                if ( nDia >= 29 and nMes == 2) or ((nMes == 4 or nMes == 6 or nMes == 9 or nMes == 11) and nDia == 31):
+                  mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
+                  return False
                 else:
-                   return True,(f"{nDia}/{nMes}/{nAño}")
+                  if nDia < 10 and nMes < 10:
+                      return True,(f"0{nDia}/0{nMes}/{nAño}")
+                  elif nDia < 10 and nMes >=10:
+                     return True,(f"0{nDia}/{nMes}/{nAño}")
+                  elif nDia >= 10 and nMes <10: 
+                     return True,(f"{nDia}/0{nMes}/{nAño}")
+                  else:
+                     return True,(f"{nDia}/{nMes}/{nAño}")
+            else:
+                #Bisiesto = True
+                if (nDia > 29 and nMes == 2):
+                  mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
+                  return False
+                else:
+                  if nDia < 10 and nMes < 10:
+                      return True,(f"0{nDia}/0{nMes}/{nAño}")
+                  elif nDia < 10 and nMes >=10:
+                     return True,(f"0{nDia}/{nMes}/{nAño}")
+                  elif nDia >= 10 and nMes <10: 
+                     return True,(f"{nDia}/0{nMes}/{nAño}")
+                  else:
+                     return True,(f"{nDia}/{nMes}/{nAño}")
         else:
           mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')  
           return False,False
       except ValueError:
-         mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
-         return False,False
+        mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
+        return False,False
   
   #Revisa que se haga doble click
 
@@ -569,7 +594,7 @@ class Inventario:
     query_Prov= f'''UPDATE Proveedores SET Razon_Social = '{self.razonSocial.get()}', Ciudad = '{self.ciudad.get()}' WHERE idNitProv = {self.idNit.get()} '''
     query_Prod= f'''UPDATE Productos SET Descripcion = '{self.descripcion.get()}', Und = '{self.unidad.get()}', Cantidad = '{self.cantidad.get()}', Precio = {self.precio.get()}, Fecha = '{self.fecha.get()}' WHERE idNit = {self.idNit.get()} '''
     if self.fecha.get() != 'DD/MM/AAAA':
-      if self.valida_Fecha()[0] ==True :
+      if self.valida_Fecha_Final()[0] ==True :
         self.run_Query(query_Prov)
         self.run_Query(query_Prod)
         mssg.showinfo('Editado','Se han guardado los cambios')
@@ -684,16 +709,17 @@ class Inventario:
 
   def adiciona_Registro(self):
       '''Adiciona un producto a la BD si la validación es True'''
-      if self.idNit.get()== '':
+      if self.idNit.get() == '':
          mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
       else:
         try:
-            self.agregaProveedor()
-            mssg.showinfo('','Proveedor creado exitosamente')
-            if self.codigo.get() != '':
-               if self.valida_Fecha():
+            if self.codigo.get() == '':
+              self.agregaProveedor()
+              mssg.showinfo('','Proveedor creado exitosamente')
+            else:
+               if self.valida_Fecha_Final():
                 try:
-                    self.agregaProducto(self.valida_Fecha()[1])
+                    self.agregaProducto(self.valida_Fecha_Final()[1])
                     mssg.showinfo('','Producto creado exitosamente')
                     self.limpiaCampos()
                 except sqlite3.IntegrityError:
@@ -702,9 +728,9 @@ class Inventario:
                 mssg.showinfo('','No se creo el producto')
         except sqlite3.IntegrityError:
             if self.codigo.get() != '':
-               if self.valida_Fecha():
+               if self.valida_Fecha_Final():
                 try:
-                    self.agregaProducto(self.valida_Fecha()[1])
+                    self.agregaProducto(self.valida_Fecha_Final()[1])
                     mssg.showinfo('','Producto creado exitosamente')
                     self.limpiaCampos()
                 except sqlite3.IntegrityError:
@@ -751,7 +777,8 @@ class Inventario:
   def buscar_prov(self):
       # Busca los proveedores que comienzen por los caracteres buscados
       query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
-      parametros=(self.idNit.get()+"%")
+      # parametros = (self.idNit.get()+"%") # para busqueda inexacta
+      parametros = (self.idNit.get())
       db_rows = self.run_Query(query,(parametros,))
       cant = 0
       row=[]
@@ -779,7 +806,8 @@ class Inventario:
   def buscar_prod(self):
       # Busca los productos que comienzen por los caracteres buscados
       query=('SELECT * FROM Productos WHERE codigo LIKE ?')
-      parametros=(self.codigo.get()+"%")
+      # parametros=(self.codigo.get()+"%") # para busqueda inexacta
+      parametros = (self.idNit.get())
       db_rows = self.run_Query(query,(parametros,))
       self.limpiaCampos()
       cant_prod = 0
@@ -807,8 +835,10 @@ class Inventario:
   def buscar_prod_prov(self):
       # Busca los productos que el idNit y el codigo comienzen por los caracteres buscados
       query=('SELECT * FROM Productos WHERE IdNit LIKE ? AND codigo LIKE ?')
-      parametro1=(self.idNit.get()+"%")
-      parametro2=(self.codigo.get()+"%")
+      # parametro1=(self.idNit.get()+"%") # para busqueda inexacta
+      parametro1 = (self.idNit.get())
+      # parametro2=(self.codigo.get()+"%") # para busqueda inexacta
+      parametro2 = (self.idNit.get())
       db_rows = self.run_Query(query,(parametro1,parametro2))
       cant_prod = 0
       row = []
