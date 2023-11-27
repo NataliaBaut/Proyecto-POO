@@ -4,14 +4,14 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
-import ctypes
-from os import path
+import ctypes #Para las dimennsiones de la Pantalla donde se ejecuta
+from os import path #Para la ruta de la base de datos
 from datetime import date
 
 
 class Inventario:
   def __init__(self, master=None):
-    crear_base_datos()
+    crear_base_datos() #Crea la base de datos con sus tablas
     # Para entrega
     # self.path =  r'X:/Users/ferna/Documents/UNal/Alumnos/2023_S2/ProyInventario'
     # self.db_name = self.path + r'\Inventario.db'
@@ -180,7 +180,6 @@ class Inventario:
     self.separador2.configure(orient="horizontal")
     self.separador2.place(anchor="nw", width=800, x=0, y=self.cambiar_alto(220))
 
-
     #tablaTreeView
     self.style=ttk.Style()
     self.style.configure("estilo.Treeview", highlightthickness=0, bd=0, background="#e0e0e0", font=('Calibri Light',10))
@@ -210,7 +209,7 @@ class Inventario:
 
     # Características de las columnas del árbol
 
-    self.treeProductos.column ("#0",          anchor="w",stretch=True,width=3)
+    self.treeProductos.column ("#0",          anchor="w",stretch=True,width=42)
     self.treeProductos.column ("Codigo",      anchor="w",stretch=True,width=3)
     self.treeProductos.column ("Descripcion", anchor="w",stretch=True,width=150)
     self.treeProductos.column ("Und",         anchor="w",stretch=True,width=3)
@@ -302,21 +301,27 @@ class Inventario:
     aceptar.pack(anchor='s',pady=5)
   def acepta(self):
       query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
-      query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
-      query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
-      query_2=f'''DELETE from Productos Where Codigo = {self.codigo.get()} AND IdNit = {self.idNit.get()}'''
+      query_0=f'''DELETE from Productos Where IdNit = '{self.idNit.get()}' '''
+      query_1=f'''DELETE from Productos Where Codigo = '{self.codigo.get()}' '''
+      query_2=f'''DELETE from Productos Where Codigo = '{self.codigo.get()}' and IdNit = '{self.idNit.get()}' '''
       if self.selection.get() == 1:
         self.ventana.withdraw()
         self.run_Query(query_1)
+        self.cancelar()
+        self.buscar()
         mssg.showinfo('Eliminado','Producto eliminado exitosamente')
       elif self.selection.get()==2:
          self.ventana.withdraw()
          self.run_Query(query_2)
+         self.cancelar()
+         self.buscar()
          mssg.showinfo('Eliminado','Producto eliminado exitosamente del proveedor')
       elif self.selection.get()==3:
          self.ventana.withdraw()
          self.run_Query(query)
          self.run_Query(query_0)
+         self.cancelar()
+         self.buscar()
          mssg.showinfo('Eliminado','Proveedor eliminado exitosamente con sus productos')
 
   def cambiar_alto(self, altura):
@@ -363,7 +368,7 @@ class Inventario:
      if event:
         if len(self.ciudad.get()) > 14:
             mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-            return 'break'
+            return 'break' #Para cancelar la incersion a nivel de clase ya que el comportamiento es hecho por la clase
   def validaDescrip (self,event):
      if event:
         if len(self.descripcion.get()) > 49:
@@ -435,7 +440,7 @@ class Inventario:
               else:
                     fecha_Ingresada = date(nAño, nMes, nDia)
                     if fecha_Ingresada > today: # comprueba que la fecha no sea mayor que hoy
-                        mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')
+                        mssg.showerror('Atención!!','.. ¡La fecha ingreasada no puede ser mayor que la actual! ..')
                         
                         return False
                     else:
@@ -587,7 +592,7 @@ class Inventario:
     ''' Edita una tupla del TreeView'''
     if self.idNit.get() != '' or self.codigo.get() != '':
        item_Pv = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
-       item_Pd = self.run_Query(''' Select Codigo from Productos''').fetchall()
+       item_Pd = self.run_Query(''' Select Codigo,IdNit from Productos''').fetchall()
        if self.codigo.get() == '':
           for item in item_Pv:
              if item[0] == self.idNit.get():
@@ -614,7 +619,7 @@ class Inventario:
              if item[0] == self.idNit.get():
                 item_Pv = True
                 for item in item_Pd:
-                  if item[0] == self.codigo.get():
+                  if item[0] == self.codigo.get() and item[1]== self.idNit.get() :
                       mssg.showinfo('Info','Para guardar los cambios presione grabar, para salir del modo editar presione cancelar')
                       item_Pd = True
                       self.actualiza= True
@@ -635,8 +640,8 @@ class Inventario:
   def guardarCambios(self):
     query_Prov= f'''UPDATE Proveedores SET Razon_Social = '{self.razonSocial.get()}', Ciudad = '{self.ciudad.get()}' WHERE idNitProv = {self.idNit.get()} '''
     query_Prod= f'''UPDATE Productos SET Descripcion = '{self.descripcion.get()}', Und = '{self.unidad.get()}', Cantidad = '{self.cantidad.get()}', Precio = '{self.precio.get()}', Fecha = '{self.fecha.get()}' WHERE idNit = {self.idNit.get()} and Codigo = {self.codigo.get()}'''
-    if self.fecha.get() != 'DD/MM/AAAA':
-      if self.valida_Fecha_Final()[0] ==True :
+    if self.codigo.get() != '':
+      if self.valida_Fecha_Final():
         self.run_Query(query_Prov)
         self.run_Query(query_Prod)
         mssg.showinfo('Editado','Se han guardado los cambios')
@@ -666,8 +671,9 @@ class Inventario:
             if valor: 
               self.run_Query(query)
               self.run_Query(query_0)
-              mssg.showinfo('','Proveedor y productos borrados exitosamente')
+              mssg.showinfo('','Borrado exitosamente')
               self.limpiaCampos()
+              self.limpia_treeView()
               break
       if conf == False:
         mssg.showerror('','Id no encontrado')          
@@ -682,6 +688,7 @@ class Inventario:
               self.run_Query(query_1)
               mssg.showinfo('','Producto borrado exitosamente')
               self.limpiaCampos()
+              self.buscar_prod()
               break
       if conf == False:
         mssg.showerror('','Codigo no encontrado')  
@@ -738,6 +745,7 @@ class Inventario:
                     self.agregaProducto(self.valida_Fecha_Final()[1])
                     mssg.showinfo('','Producto creado exitosamente')
                     self.limpiaCampos()
+                    self.limpia_treeView()
                     return
                 except sqlite3.IntegrityError:
                   mssg.showerror('Atención!!','Código de producto ya existente')
@@ -763,11 +771,12 @@ class Inventario:
               if self.valida_Fecha_Final(): #y la fecha es valida
                 try:
                     self.agregaProducto(self.valida_Fecha_Final()[1])
-                    self.limpiaCampos()
                 except sqlite3.IntegrityError: #Codigo ya existente
                     mssg.showerror('Atención!!','Código de producto ya existente')
                     return
                 self.agregaProveedor()
+                self.limpiaCampos()
+                self.limpia_treeView()
                 mssg.showinfo('','Proveedor creado exitosamente')
                 mssg.showinfo('','Producto creado exitosamente')
                 return
@@ -777,6 +786,7 @@ class Inventario:
           else:#Codigo vacio
               self.agregaProveedor()
               mssg.showinfo('','Proveedor creado exitosamente')
+              self.limpia_treeView()
               return
   
   #Caso adiciona Proveedor
@@ -920,8 +930,6 @@ class Inventario:
     if (self.actualiza == True) or (self.elimina==True):
       if self.actualiza == True:
         mssg.showinfo('Modo editar','Ha salido del modo editar')
-      elif self.elimina == True:
-        mssg.showinfo('Eliminar','Ha cancelado la eliminacion')
       self.actualiza = False
       self.elimina = False
       self.idNit.config(state = 'normal')
@@ -945,7 +953,7 @@ class Inventario:
     else:
       self.limpiaCampos()
       self.limpia_treeView()
-
+      self.idNit.focus()
 # Crea la base de datos
 def crear_base_datos():
   conn = sqlite3.connect('Inventario.db')
