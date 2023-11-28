@@ -1,13 +1,12 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
-import tkinter as tk
+import tkinter as tk 
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
 import ctypes #Para las dimennsiones de la Pantalla donde se ejecuta
 from os import path #Para la ruta de la base de datos
 from datetime import date
-
 
 class Inventario:
   def __init__(self, master=None):
@@ -308,20 +307,23 @@ class Inventario:
         self.ventana.withdraw()
         self.run_Query(query_1)
         self.cancelar()
-        self.buscar()
+        self.limpiaCampos()
+        self.limpia_treeView()
         mssg.showinfo('Eliminado','Producto eliminado exitosamente')
       elif self.selection.get()==2:
          self.ventana.withdraw()
          self.run_Query(query_2)
          self.cancelar()
-         self.buscar()
+         self.limpiaCampos()
+         self.limpia_treeView()
          mssg.showinfo('Eliminado','Producto eliminado exitosamente del proveedor')
       elif self.selection.get()==3:
          self.ventana.withdraw()
          self.run_Query(query)
          self.run_Query(query_0)
          self.cancelar()
-         self.buscar()
+         self.limpiaCampos()
+         self.limpia_treeView()
          mssg.showinfo('Eliminado','Proveedor eliminado exitosamente con sus productos')
 
   def cambiar_alto(self, altura):
@@ -330,13 +332,24 @@ class Inventario:
 
   #Fución de manejo de eventos del sistema
   def run(self):
+      item_Pv = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+      item_Pd = self.run_Query(''' Select Codigo from Productos''').fetchall()
+      nulo = True
+      for i in item_Pv:
+         if i[0] == None:
+            mssg.showwarning('Cuidado!','Valor nulo en llave primaria, esto puede generar errores en el funcionamiento del programa.')
+            nulo = False
+      if nulo == True:
+        for j in item_Pd:
+          if j[0] == None:
+              mssg.showwarning('Cuidado!','Valor nulo en llave primaria, esto puede generar errores en el funcionamiento del programa.')    
       self.mainwindow.mainloop()
   ''' ......... Métodos utilitarios del sistema .............'''
   #Rutina de centrado de pantalla
   def centra(self,win,ancho,alto): 
       """ centra las ventanas en la pantalla """ 
       x = win.winfo_screenwidth() // 2 - ancho // 2 
-      y = win.winfo_screenheight() // 3 - alto // 3 
+      y = win.winfo_screenheight() // 3 - alto // 3
       win.geometry(f'{ancho}x{alto}+{x}+{y}') 
       win.deiconify() # Se usa para restaurar la ventana
 
@@ -441,7 +454,6 @@ class Inventario:
                     fecha_Ingresada = date(nAño, nMes, nDia)
                     if fecha_Ingresada > today: # comprueba que la fecha no sea mayor que hoy
                         mssg.showerror('Atención!!','.. ¡La fecha ingreasada no puede ser mayor que la actual! ..')
-                        
                         return False
                     else:
                       if nDia < 10 and nMes < 10:
@@ -473,7 +485,7 @@ class Inventario:
                       else:
                         return True,(f"{nDia}/{nMes}/{nAño}")
         else:
-          mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe! ..')  
+          mssg.showerror('Atención!!','.. ¡La fecha ingreasada no existe o es inferior al 2000! ..')  
           return False
       except ValueError:
          mssg.showerror('Atención!!','.. ¡Ingrese una Fecha valida! ..')
@@ -695,13 +707,13 @@ class Inventario:
       
     elif self.codigo.get() != '' and self.idNit.get() != '':
   
-      items = self.run_Query('''Select Codigo from Productos ''').fetchall()
+      items = self.run_Query('''Select Codigo,IdNit from Productos ''').fetchall()
       items_p = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
       for item in items:
           for  i in items_p:
              if i[0] == self.idNit.get():
                 conf_p = True
-                if item[0] == self.codigo.get():
+                if item[0] == self.codigo.get() and item[1] == self.idNit.get():
                   conf = True
       if conf and conf_p == True:
         self.centra(self.ventana,410,155)
@@ -738,7 +750,7 @@ class Inventario:
         items = self.run_Query('''Select IdNitProv from Proveedores''').fetchall()
         for item in items:
           if self.idNit.get() == item[0]:
-            Existe = True
+            Existe = True #Si existe el id
             if self.codigo.get() != '':
               if self.valida_Fecha_Final():
                 try:
