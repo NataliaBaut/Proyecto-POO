@@ -287,7 +287,7 @@ class Inventario:
     ancho=410
     alto=155
     self.ventana.resizable(False,False)
-    self.ventana.overrideredirect(True)
+    self.ventana.overrideredirect(True)#Quita los controles superiores
     self.ventana.title("Manejo de Proveedores")
     self.selection=tk.IntVar()
     op1=tk.Radiobutton(self.ventana,text='''Eliminar el producto de todos los proveedores ''', variable=self.selection, value=1,font=('Calibri Light',11),padx=10)
@@ -652,14 +652,14 @@ class Inventario:
   def guardarCambios(self):
     query_Prov= f'''UPDATE Proveedores SET Razon_Social = '{self.razonSocial.get()}', Ciudad = '{self.ciudad.get()}' WHERE idNitProv = {self.idNit.get()} '''
     query_Prod= f'''UPDATE Productos SET Descripcion = '{self.descripcion.get()}', Und = '{self.unidad.get()}', Cantidad = '{self.cantidad.get()}', Precio = '{self.precio.get()}', Fecha = '{self.fecha.get()}' WHERE idNit = {self.idNit.get()} and Codigo = {self.codigo.get()}'''
-    if self.codigo.get() != '':
-      if self.valida_Fecha_Final():
+    if self.codigo.get() != '': #Hay codigo 
+      if self.valida_Fecha_Final():#tiene que validar fecha
         self.run_Query(query_Prov)
         self.run_Query(query_Prod)
         mssg.showinfo('Editado','Se han guardado los cambios')
         self.cancelar()
 
-    else:
+    else:#no hay codigo
       self.run_Query(query_Prov)
       mssg.showinfo('Editado','Se han guardado los cambios')  
       self.cancelar()
@@ -691,11 +691,11 @@ class Inventario:
         mssg.showerror('','Id no encontrado')          
     elif self.codigo.get() != '' and self.idNit.get() == '':
       items = self.run_Query(''' Select Codigo from Productos''').fetchall()
-      conf_p=False
+      conf=False
       for item in items:
           if item[0] == self.codigo.get():
             valor = mssg.askyesno('Eliminar',f'Desea borrar el producto de código {self.codigo .get()} de todos los proveedores ?')
-            conf_p =True
+            conf =True
             if valor:
               self.run_Query(query_1)
               mssg.showinfo('','Producto borrado exitosamente')
@@ -961,6 +961,7 @@ class Inventario:
       self.fecha.delete(0,tk.END)
       self.fecha.insert(0,"DD/MM/AAAA")
       self.fecha.config(foreground='grey')
+      self.ventana.withdraw()
       
     else:
       self.limpiaCampos()
