@@ -10,13 +10,14 @@ from datetime import date
 
 class Inventario:
   def __init__(self, master=None):
-    crear_base_datos() #Crea la base de datos con sus tablas
-    # Para entrega
-    # self.path =  r'X:/Users/ferna/Documents/UNal/Alumnos/2023_S2/ProyInventario'
-    # self.db_name = self.path + r'\Inventario.db'
+     #Crea la base de datos con sus tablas
+    
+    #self.path =  r'X:/Users/ferna/Documents/UNal/Alumnos/2023_S2/ProyInventario'
+    #self.db_name = self.path + r'\Inventario.db'
     # Para pruebas
     self.path = str(path.dirname(__file__))
-    self.db_name = r"" + self.path + r'\Inventario.db'
+    self.db_name = r"" + self.path + r'\BD\Inventario.db'
+    #self.crear_base_datos()
     # Dimensione de la pantalla
     user32 = ctypes.windll.user32
     user32.SetProcessDPIAware()
@@ -28,7 +29,7 @@ class Inventario:
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("f2.ico")
+    self.win.iconbitmap(self.path+r'\imgs\f2.ico')
     self.win.resizable(False, False)
     self.win.title("Manejo de Proveedores") 
 
@@ -299,7 +300,7 @@ class Inventario:
     aceptar = ttk.Button(self.ventana,text='Aceptar',width=10,command=self.acepta)
     aceptar.pack(anchor='s',pady=5)
   def acepta(self):
-      query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
+      query = f'''DELETE from Proveedor Where IdNitProv = {self.idNit.get()}'''
       query_0=f'''DELETE from Productos Where IdNit = '{self.idNit.get()}' '''
       query_1=f'''DELETE from Productos Where Codigo = '{self.codigo.get()}' '''
       query_2=f'''DELETE from Productos Where Codigo = '{self.codigo.get()}' and IdNit = '{self.idNit.get()}' '''
@@ -332,7 +333,7 @@ class Inventario:
 
   #Fución de manejo de eventos del sistema
   def run(self):
-      item_Pv = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+      item_Pv = self.run_Query(''' Select IdNitProv from Proveedor''').fetchall()
       item_Pd = self.run_Query(''' Select Codigo from Productos''').fetchall()
       nulo = True
       for i in item_Pv:
@@ -514,7 +515,7 @@ class Inventario:
           self.cantidad.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][3])
           self.precio.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][4])
           self.fecha.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][5])
-          query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+          query=('SELECT * FROM Proveedor WHERE idNitProv LIKE ?')
           parametros=(self.idNit.get())
           db_rows = self.run_Query(query,(parametros,))
           row=[]
@@ -575,7 +576,7 @@ class Inventario:
     self.limpia_treeView
     
     # Seleccionando los datos de la BD
-    query = '''SELECT * from Proveedores INNER JOIN Productos WHERE idNitProv = idNit ORDER BY idNitProv'''
+    query = '''SELECT * from Proveedor INNER JOIN Productos WHERE idNitProv = idNit ORDER BY idNitProv'''
     db_rows = self.run_Query(query) # db_rows contine la vista del query
       
     # Insertando los datos de la BD en treeProductos de la pantalla
@@ -603,7 +604,7 @@ class Inventario:
   def edita(self):
     ''' Edita una tupla del TreeView'''
     if self.idNit.get() != '' or self.codigo.get() != '':
-       item_Pv = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+       item_Pv = self.run_Query(''' Select IdNitProv from Proveedor''').fetchall()
        item_Pd = self.run_Query(''' Select Codigo,IdNit from Productos''').fetchall()
        if self.codigo.get() == '':
           for item in item_Pv:
@@ -623,7 +624,7 @@ class Inventario:
                 self.btnBuscar.configure(state="disabled")
                 self.btnGrabar.configure(command=self.guardarCambios)
           if item_Pv != True:
-            mssg.showerror('Advertencia','Solo se pueden editar proveedores existentes')
+            mssg.showerror('Advertencia','Solo se pueden editar Proveedor existentes')
        elif self.idNit.get()=='':
           mssg.showerror('Advertencia','Ingrese un id para poder editar')
        else:
@@ -650,7 +651,7 @@ class Inventario:
 #Guarda cambios de editar
 
   def guardarCambios(self):
-    query_Prov= f'''UPDATE Proveedores SET Razon_Social = '{self.razonSocial.get()}', Ciudad = '{self.ciudad.get()}' WHERE idNitProv = {self.idNit.get()} '''
+    query_Prov= f'''UPDATE Proveedor SET Razon_Social = '{self.razonSocial.get()}', Ciudad = '{self.ciudad.get()}' WHERE idNitProv = {self.idNit.get()} '''
     query_Prod= f'''UPDATE Productos SET Descripcion = '{self.descripcion.get()}', Und = '{self.unidad.get()}', Cantidad = '{self.cantidad.get()}', Precio = '{self.precio.get()}', Fecha = '{self.fecha.get()}' WHERE idNit = {self.idNit.get()} and Codigo = {self.codigo.get()}'''
     if self.codigo.get() != '': #Hay codigo 
       if self.valida_Fecha_Final():#tiene que validar fecha
@@ -668,13 +669,13 @@ class Inventario:
 
   def eliminaRegistro(self):
     '''Elimina un Registro en la BD'''
-    query = f'''DELETE from Proveedores Where IdNitProv = {self.idNit.get()}'''
+    query = f'''DELETE from Proveedor Where IdNitProv = {self.idNit.get()}'''
     query_0=f'''DELETE from Productos Where IdNit = {self.idNit.get()}'''
     query_1=f'''DELETE from Productos Where Codigo = {self.codigo.get()}'''
     conf = None
     conf_p = None
     if self.idNit.get()!= '' and self.codigo.get() == '':
-      items = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+      items = self.run_Query(''' Select IdNitProv from Proveedor''').fetchall()
       conf = False
       for item in items:
           if item[0] == self.idNit.get():
@@ -694,7 +695,7 @@ class Inventario:
       conf=False
       for item in items:
           if item[0] == self.codigo.get():
-            valor = mssg.askyesno('Eliminar',f'Desea borrar el producto de código {self.codigo .get()} de todos los proveedores ?')
+            valor = mssg.askyesno('Eliminar',f'Desea borrar el producto de código {self.codigo .get()} de todos los Proveedor ?')
             conf =True
             if valor:
               self.run_Query(query_1)
@@ -708,7 +709,7 @@ class Inventario:
     elif self.codigo.get() != '' and self.idNit.get() != '':
   
       items = self.run_Query('''Select Codigo,IdNit from Productos ''').fetchall()
-      items_p = self.run_Query(''' Select IdNitProv from Proveedores''').fetchall()
+      items_p = self.run_Query(''' Select IdNitProv from Proveedor''').fetchall()
       for item in items:
           for  i in items_p:
              if i[0] == self.idNit.get():
@@ -747,7 +748,7 @@ class Inventario:
          mssg.showerror('Atención!!','.. ¡No ingresó Id! ..')
       else:
         Existe=False
-        items = self.run_Query('''Select IdNitProv from Proveedores''').fetchall()
+        items = self.run_Query('''Select IdNitProv from Proveedor''').fetchall()
         for item in items:
           if self.idNit.get() == item[0]:
             Existe = True #Si existe el id
@@ -805,7 +806,7 @@ class Inventario:
 
   def agregaProveedor(self):
    Registro_Prov=[(self.idNit.get(),self.razonSocial.get(),self.ciudad.get())]
-   query="INSERT INTO Proveedores VALUES (?,?,?)"
+   query="INSERT INTO Proveedor VALUES (?,?,?)"
    self.run_Query_M(query,Registro_Prov)
   
   #Caso adiciona Producto
@@ -828,7 +829,7 @@ class Inventario:
 
   def buscar_prov(self):
       # Busca los proveedores que comienzen por los caracteres buscados
-      query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+      query=('SELECT * FROM Proveedor WHERE idNitProv LIKE ?')
       parametros=(self.idNit.get()+"%")
       db_rows = self.run_Query(query,(parametros,))
       cant = 0
@@ -869,7 +870,7 @@ class Inventario:
         self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
       # Si solo hay un proveedor de el/los productos, imprime los datos de este prov
       if cant_prod == 1:
-        query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+        query=('SELECT * FROM Proveedor WHERE idNitProv LIKE ?')
         parametros=(row[0])
         db_rows = self.run_Query(query,(parametros,))
         row=[]
@@ -901,7 +902,7 @@ class Inventario:
         mssg.showerror('Atención!!','.. ¡Producto no encontrado! ..')
       else:
         # Busca los proveedores de los productos encontrados
-        query=('SELECT * FROM Proveedores WHERE idNitProv LIKE ?')
+        query=('SELECT * FROM Proveedor WHERE idNitProv LIKE ?')
         parametros=(row[0])
         db_rows = self.run_Query(query,(parametros,))
         row=[]
@@ -968,10 +969,10 @@ class Inventario:
       self.limpia_treeView()
       self.idNit.focus()
 # Crea la base de datos
-def crear_base_datos():
-  conn = sqlite3.connect('Inventario.db')
+def crear_base_datos(self):
+  conn = sqlite3.connect(self.db_name)
   c=conn.cursor()
-  c.execute(""" CREATE TABLE IF NOT EXISTS Proveedores (
+  c.execute(""" CREATE TABLE IF NOT EXISTS Proveedor (
       idNitProv VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE,
       Razon_Social VARCHAR(50),
       Ciudad VARCHAR(15)
@@ -979,7 +980,7 @@ def crear_base_datos():
 
   c.execute(""" CREATE TABLE IF NOT EXISTS Productos(
       IdNit VARCHAR(15) ,
-      Codigo VARCHAR(15) NOT NULL,
+      Codigo VARCHAR(15) NOT NULL UNIQUE,
       Descripcion VARCHAR(50),
       Und VARCHAR(10),
       Cantidad DOUBLE,
@@ -987,7 +988,7 @@ def crear_base_datos():
       Fecha DATE,
       PRIMARY KEY (IdNit, codigo)
   ) """)
-  # c.execute("INSERT INTO Proveedores ")
+    # c.execute("INSERT INTO Proveedores ")
   conn.close()
 
 if __name__ == "__main__":
